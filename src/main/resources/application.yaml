@@ -1,11 +1,59 @@
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+                - openid
+                - profile
+                - email
   kafka:
     bootstrap-servers: localhost:9094
   application:
     name: auto-message
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/k_db_dev}
+    username: ${DB_USERNAME:dev}
+    password: ${DB_PASSWORD:dev}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.web.client: DEBUG
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${EXPIRATION_TIME}
+  frontend:
+    redirect-url: ${REDIRECT_URI}
 
-youtube:
-  client-id: ${YOUTUBE_CLIENT_ID:your-client-id}
-  client-secret: ${YOUTUBE_CLIENT_SECRET:your-client-secret}
-  redirect-uri: http://localhost:8080/api/youtube/oauth/callback
-  scope: ${YOUTUBE_SCOPE:https://www.googleapis.com/auth/youtube.readonly}
+
+
+
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          youtube:
+#            client-id: ${YOUTUBE_CLIENT_ID}
+#            client-secret: ${YOUTUBE_CLIENT_SECRET}
+#            scope: https://www.googleapis.com/auth/youtube.readonly
+#            redirect-uri: "{baseUrl}/api/youtube/oauth/callback"
+#            authorization-grant-type: authorization_code
+#            client-name: YouTube
+#        provider:
+#          youtube:
+#            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+#            token-uri: https://oauth2.googleapis.com/token
+#            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+#            user-name-attribute: sub
+

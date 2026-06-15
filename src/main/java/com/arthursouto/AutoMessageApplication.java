@@ -1,4 +1,4 @@
-package com.growe.auto_message;
+package com.arthursouto;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

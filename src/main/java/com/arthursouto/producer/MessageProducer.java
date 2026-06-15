@@ -1,6 +1,6 @@
-package com.growe.auto_message.producer;
+package com.arthursouto.producer;
 
-import com.growe.auto_message.config.KafkaTopics;
+import com.arthursouto.config.KafkaTopics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

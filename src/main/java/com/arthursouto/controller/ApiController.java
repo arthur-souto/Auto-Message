@@ -1,7 +1,7 @@
-package com.growe.auto_message.controller;
+package com.arthursouto.controller;
 
-import com.growe.auto_message.dto.SendMessageRequest;
-import com.growe.auto_message.service.MessageService;
+import com.arthursouto.dto.SendMessageRequest;
+import com.arthursouto.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -1,4 +1,4 @@
-package com.growe.auto_message.dto;
+package com.arthursouto.dto;
 
 public record SendMessageRequest(
         String message

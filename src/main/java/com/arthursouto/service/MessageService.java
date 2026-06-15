@@ -1,7 +1,7 @@
-package com.growe.auto_message.service;
+package com.arthursouto.service;
 
-import com.growe.auto_message.dto.SendMessageRequest;
-import com.growe.auto_message.producer.MessageProducer;
+import com.arthursouto.dto.SendMessageRequest;
+import com.arthursouto.producer.MessageProducer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

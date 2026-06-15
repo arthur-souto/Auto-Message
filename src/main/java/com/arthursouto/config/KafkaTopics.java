@@ -1,4 +1,4 @@
-package com.growe.auto_message.config;
+package com.arthursouto.config;
 
 import lombok.experimental.UtilityClass;
 

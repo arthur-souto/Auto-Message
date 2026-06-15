@@ -1,7 +1,7 @@
-package com.growe.auto_message.consumer;
+package com.arthursouto.consumer;
 
-import com.growe.auto_message.config.KafkaGroups;
-import com.growe.auto_message.config.KafkaTopics;
+import com.arthursouto.config.KafkaGroups;
+import com.arthursouto.config.KafkaTopics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
