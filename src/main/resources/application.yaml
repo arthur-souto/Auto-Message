@@ -1,0 +1,11 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9094
+  application:
+    name: auto-message
+
+youtube:
+  client-id: ${YOUTUBE_CLIENT_ID:your-client-id}
+  client-secret: ${YOUTUBE_CLIENT_SECRET:your-client-secret}
+  redirect-uri: http://localhost:8080/api/youtube/oauth/callback
+  scope: ${YOUTUBE_SCOPE:https://www.googleapis.com/auth/youtube.readonly}
