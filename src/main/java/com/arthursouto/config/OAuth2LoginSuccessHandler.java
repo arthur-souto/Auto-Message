@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Objects;
 
 @Component
@@ -24,9 +25,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final AuthCodeCache authCodeCache;
 
     @Value("${app.frontend.redirect-url}")
     private String frontRedirectUrl;
+
+    private static final int DURATION_SECONDS_CODE = 30;
 
     private String buildUsernameTemporary(String email, String googleId) {
         return email.split("@")[0] + "-" + googleId.substring(0, 4);
@@ -38,33 +42,27 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String email = Objects.requireNonNull(oAuth2User.getAttribute("email"));
         String name = oAuth2User.getAttribute("name");
 
-        return userRepository
-                .findByGoogleId(id)
-                .orElseGet(() -> userRepository.save(
+        return userRepository.findByGoogleId(id).orElseGet(
+                () -> userRepository.save(
                         User.builder()
                                 .googleId(id)
                                 .email(email)
                                 .name(name)
-                                .username(buildUsernameTemporary(
-                                        email,
-                                        id
-                                ))
+                                .username(buildUsernameTemporary(email, id))
                                 .build()
-                ));
+                )
+        );
     }
 
-    private void redirectToFrontEnd(String token, @NonNull HttpServletResponse res) throws IOException {
-        String redirectUrl = UriComponentsBuilder.fromUriString(frontRedirectUrl)
-                .queryParam("token", token)
+    private void redirect(String token, @NonNull HttpServletResponse res) throws IOException {
+        var code = authCodeCache.generateCode(token, Duration.ofSeconds(DURATION_SECONDS_CODE));
+
+        var redirectUrl = UriComponentsBuilder.fromUriString(frontRedirectUrl)
+                .queryParam("code", code)
                 .build()
-                .toUriString();
+                .toString();
 
         res.sendRedirect(redirectUrl);
-    }
-
-    private void redirectToJson(String token, @NonNull HttpServletResponse res) throws IOException {
-        res.setContentType("application/json");
-        res.getWriter().write("{\"token\": \"" + token + "\"}");
     }
 
     @Override
@@ -72,8 +70,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         OAuth2User oAuth2User = ((OAuth2AuthenticationToken) auth).getPrincipal();
         User user = buildUserFromOAuth2(oAuth2User);
         String token = jwtService.generateToken(user);
-
-        redirectToJson(token, res);
+        redirect(token, res);
     }
 
 

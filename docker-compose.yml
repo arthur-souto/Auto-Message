@@ -14,6 +14,11 @@ services:
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
   database:
     image: postgres:16-alpine
     container_name: database

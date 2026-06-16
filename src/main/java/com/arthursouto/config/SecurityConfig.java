@@ -22,7 +22,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
-        String[] allowedPaths = {"/test/**", "/swagger-ui/**", "/v3/api-docs/**", "/oauth2/**\", \"/login/**\", \"/public/**"};
+        String[] allowedPaths = {"/test/**", "/swagger-ui/**", "/v3/api-docs/**", "/oauth2/**\", \"/login/**\", \"/public/**", "/v1/api/auth/exchange"};
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
