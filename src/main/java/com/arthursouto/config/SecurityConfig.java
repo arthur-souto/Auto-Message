@@ -10,6 +10,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -19,10 +24,22 @@ public class SecurityConfig {
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
     private final JwtAuthFilter jwtAuthFilter;
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH" , "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
     @Bean
     public SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
-        String[] allowedPaths = {"/test/**", "/swagger-ui/**", "/v3/api-docs/**", "/oauth2/**\", \"/login/**\", \"/public/**", "/v1/api/auth/exchange"};
+        String[] allowedPaths = {"/test/**", "/swagger-ui/**", "/v3/api-docs/**", "/oauth2/**\", \"/login/**\", \"/public/**", "/v1/api/auth/exchange", "/v1/api/auth/refresh", "/v1/api/auth/logout"};
 
         http
                 .csrf(AbstractHttpConfigurer::disable)

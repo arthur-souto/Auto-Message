@@ -22,11 +22,13 @@ public class AuthExchangeController {
 
     @PostMapping("/exchange")
     public ResponseEntity<?> exchange(@RequestBody ExchangeRequest request) {
-        return authCodeCache.consume(request.code)
-                .<ResponseEntity<?>>map(token -> ResponseEntity.ok(Map.of("token", token)))
-                .orElseGet(
-                        () -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                .body(Map.of("error", "Invalid code or expired"))
-                );
+        return authCodeCache.consume(request.code())
+                .<ResponseEntity<?>>map(tokens -> ResponseEntity.ok(Map.of(
+                        "accessToken", tokens.accessToken(),
+                        "refreshToken", tokens.refreshToken()
+                )))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid code or expired")));
     }
+
 }

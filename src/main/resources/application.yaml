@@ -2,7 +2,7 @@ spring:
   data:
     redis:
       host: ${REDIS_HOST:localhost}
-      ports: ${REDIS_PORT:6379}
+      port: ${REDIS_PORT:6379}
   security:
     oauth2:
       client:
@@ -36,7 +36,10 @@ logging:
 app:
   jwt:
     secret: ${JWT_SECRET}
-    expiration-ms: ${EXPIRATION_TIME}
+    expiration-ms: ${JWT_EXPIRATION}
+    refresh:
+      secret: ${JWT_REFRESH_SECRET}
+      expiration: ${JWT_REFRESH_EXPIRATION}
   frontend:
     redirect-url: ${REDIRECT_URI}
 
