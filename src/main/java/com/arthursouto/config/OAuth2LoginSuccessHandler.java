@@ -1,10 +1,10 @@
 package com.arthursouto.config;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.issuer.RefreshTokenIssuer;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.MessageService;
-import com.arthursouto.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final AuthCodeCache authCodeCache;
-    private final RefreshTokenService refreshTokenService;
     private final MessageService messageService;
+    private final RefreshTokenIssuer refreshTokenIssuer;
 
     @Value("${app.frontend.redirect-url}")
     private String frontRedirectUrl;
@@ -80,7 +80,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         OAuth2User oAuth2User = ((OAuth2AuthenticationToken) auth).getPrincipal();
         User user = buildUserFromOAuth2(oAuth2User);
         String accessToken = jwtService.generateToken(user);
-        String refreshToken = refreshTokenService.generate(user);
+        String refreshToken = refreshTokenIssuer.generate(user);
 
         redirect(accessToken, refreshToken, res);
     }

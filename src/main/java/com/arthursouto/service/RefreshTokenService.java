@@ -1,20 +1,15 @@
 package com.arthursouto.service;
 
 import com.arthursouto.domain.RefreshToken;
-import com.arthursouto.domain.User;
+import com.arthursouto.issuer.RefreshTokenIssuer;
 import com.arthursouto.repository.RefreshTokenRepository;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,26 +20,10 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
+    private final RefreshTokenIssuer refreshTokenIssuer;
 
 
     public record RotationResult(UUID userId, String newToken) {}
-
-    @Transactional
-    public String generate(User user) {
-        String token = jwtService.generateRefreshToken(user);
-        Claims claims = jwtService.parseRefreshClaims(token);
-
-        RefreshToken entity = RefreshToken.builder()
-                .tokenHash(hash(token))
-                .user(user)
-                .createdAt(Instant.now())
-                .expiresAt(claims.getExpiration().toInstant())
-                .revoked(false)
-                .build();
-
-        refreshTokenRepository.save(entity);
-        return token;
-    }
 
     @Transactional
     public Optional<RotationResult> rotate(String oldToken) {
@@ -54,7 +33,7 @@ public class RefreshTokenService {
             return Optional.empty();
         }
 
-        String hashed = hash(oldToken);
+        String hashed = refreshTokenIssuer.hash(oldToken);
 
         var found = refreshTokenRepository.findByTokenHashAndRevokedFalse(hashed);
 
@@ -70,14 +49,14 @@ public class RefreshTokenService {
 
         rt.setRevoked(true);
         refreshTokenRepository.save(rt);
-        String newToken = generate(rt.getUser());
+        String newToken = refreshTokenIssuer.generate(rt.getUser());
 
         return Optional.of(new RotationResult(rt.getUser().getId(), newToken));
     }
 
     @Transactional
     public void revoke(String token) {
-        refreshTokenRepository.findByTokenHashAndRevokedFalse(hash(token))
+        refreshTokenRepository.findByTokenHashAndRevokedFalse(refreshTokenIssuer.hash(token))
                 .ifPresent(rt -> {
                     rt.setRevoked(true);
                     refreshTokenRepository.save(rt);
@@ -95,13 +74,4 @@ public class RefreshTokenService {
         refreshTokenRepository.deleteByExpiresAtBefore(Instant.now());
     }
 
-    private String hash(String token) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashed = digest.digest(token.getBytes());
-            return Base64.getEncoder().encodeToString(hashed);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
-        }
-    }
 }
