@@ -1,9 +1,9 @@
 package com.arthursouto.service;
 
 import com.arthursouto.dto.MeResponse;
+import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +17,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public MeResponse getUserById(UUID userId) {
-        var user = userRepository.findById(userId).orElseThrow(() -> new BadCredentialsException("invalid credentials"));
+        var user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return MeResponse.from(user);
     }
 }

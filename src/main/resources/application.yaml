@@ -27,6 +27,16 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
+  mail:
+    host: smtp.resend.com
+    port: 465
+    username: resend
+    password: ${RESEND_API_KEY}
+    properties:
+      mail:
+        smtp:
+          ssl.enable: true
+          auth: true
 logging:
   level:
     root: INFO
@@ -34,6 +44,8 @@ logging:
     org.springframework.security.oauth2: DEBUG
     org.springframework.web.client: DEBUG
 app:
+  mail:
+    from: ${MAIL_FROM}
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION}
@@ -42,10 +54,7 @@ app:
       expiration: ${JWT_REFRESH_EXPIRATION}
   frontend:
     redirect-url: ${REDIRECT_URI}
-
-
-
-
+    base-url: ${FRONT_URL}
 #  security:
 #    oauth2:
 #      client:

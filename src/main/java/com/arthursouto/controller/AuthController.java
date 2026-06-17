@@ -3,6 +3,7 @@ package com.arthursouto.controller;
 import com.arthursouto.domain.RefreshToken;
 import com.arthursouto.domain.User;
 import com.arthursouto.dto.MeResponse;
+import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.RefreshTokenService;
@@ -25,13 +26,12 @@ public class AuthController {
 
     public record RefreshRequest(String refreshToken) {}
 
-
     @PostMapping("/refresh")
     public ResponseEntity<Map<String ,String>> refresh(@RequestBody RefreshRequest req) {
         return refreshTokenService.rotate(req.refreshToken())
                 .map(rotation -> {
                    User user = userRepository.findById(rotation.userId())
-                           .orElseThrow(() -> new IllegalStateException("User not found for refresh token"));
+                           .orElseThrow(() -> new ResourceNotFoundException("User not found"));
                    String newAccessToken = jwtService.generateToken(user);
 
                    return ResponseEntity.ok(Map.of(

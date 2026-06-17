@@ -1,6 +1,7 @@
 package com.arthursouto.controller;
 
 import com.arthursouto.config.AuthCodeCache;
+import com.arthursouto.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,6 @@ import java.util.Map;
 public class AuthExchangeController {
 
     private final AuthCodeCache authCodeCache;
-
     public record ExchangeRequest(String code) {}
 
     @PostMapping("/exchange")

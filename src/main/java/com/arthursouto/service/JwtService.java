@@ -2,7 +2,6 @@ package com.arthursouto.service;
 
 import com.arthursouto.domain.User;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,39 +33,39 @@ public class JwtService {
 
     public String generateToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getId().toString())
+                .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("username", user.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(jwtTokenKey)
                 .compact();
     }
 
     public String generateRefreshToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getId().toString())
+                .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("username", user.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationRefresh))
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expirationRefresh))
                 .signWith(jwtRefreshTokenKey)
                 .compact();
     }
 
     public Claims parseClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(jwtTokenKey)
+        return Jwts.parser()
+                .verifyWith(jwtTokenKey)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
-    public  Claims parseRefreshClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(jwtRefreshTokenKey)
+    public Claims parseRefreshClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(jwtRefreshTokenKey)
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

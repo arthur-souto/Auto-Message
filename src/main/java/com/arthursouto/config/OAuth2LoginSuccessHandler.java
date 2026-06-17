@@ -3,14 +3,13 @@ package com.arthursouto.config;
 import com.arthursouto.domain.User;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
+import com.arthursouto.service.MessageService;
 import com.arthursouto.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -30,6 +29,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final AuthCodeCache authCodeCache;
     private final RefreshTokenService refreshTokenService;
+    private final MessageService messageService;
 
     @Value("${app.frontend.redirect-url}")
     private String frontRedirectUrl;
@@ -46,18 +46,22 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String email = Objects.requireNonNull(oAuth2User.getAttribute("email"));
         String name = oAuth2User.getAttribute("name");
 
-        return userRepository.findByGoogleId(id).orElseGet(
-                () -> userRepository.save(
-                        User.builder()
-                                .googleId(id)
-                                .email(email)
-                                .name(name)
-                                .username(buildUsernameTemporary(email, id))
-                                .build()
-                )
-        );
-    }
+        return userRepository.findByGoogleId(id).orElseGet(() -> {
 
+            final var user = userRepository.save(
+                    User.builder()
+                            .googleId(id)
+                            .email(email)
+                            .name(name)
+                            .username(buildUsernameTemporary(email, id))
+                            .build()
+            );
+
+            messageService.sendWelcomeMessage(user);
+
+            return user;
+        });
+    }
 
     private void redirect(String accessToken, String refreshToken, @NonNull HttpServletResponse res) throws IOException {
         var tokens = new AuthCodeCache.TokenPair(accessToken, refreshToken);
@@ -77,6 +81,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         User user = buildUserFromOAuth2(oAuth2User);
         String accessToken = jwtService.generateToken(user);
         String refreshToken = refreshTokenService.generate(user);
+
         redirect(accessToken, refreshToken, res);
     }
 
