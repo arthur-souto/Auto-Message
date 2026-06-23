@@ -69,6 +69,11 @@ public class SecurityConfig {
                 )
                 .oauth2Login(o -> o
                         .successHandler(oauth2LoginSuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"error\": \"" + exception.getMessage() + "\"}");
+                        })
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         ;
