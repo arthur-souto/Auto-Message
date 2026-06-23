@@ -1,18 +1,16 @@
-server:
-  port: ${PORT:8080}
 spring:
-  data:
-    redis:
-      host: ${REDIS_HOST}
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
     show-sql: false
+    hibernate:
+      ddl-auto: validate
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 logging:
   level:
-    root: INFO
-    org.springframework.security: WARN
-    org.springframework.security.oauth2: WARN
-    org.springframework.web.client: WARN
+    root: WARN

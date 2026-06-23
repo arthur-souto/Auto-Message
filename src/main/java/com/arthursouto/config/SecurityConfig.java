@@ -50,6 +50,7 @@ public class SecurityConfig {
                 "/oauth2/**",
                 "/login/**",
                 "/public/**",
+                "/actuator/health/**",
                 "/v1/api/auth/exchange",
                 "/v1/api/auth/refresh",
                 "/v1/api/auth/logout"
