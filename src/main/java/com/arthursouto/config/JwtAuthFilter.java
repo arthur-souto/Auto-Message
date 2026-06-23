@@ -40,7 +40,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 UUID userId = UUID.fromString(claims.getSubject());
 
                 userRepository.findById(userId).ifPresent(user -> {
-                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + "ADMIN"));
+                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
                     var auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 });

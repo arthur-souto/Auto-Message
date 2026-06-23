@@ -1,8 +1,8 @@
 spring:
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   security:
     oauth2:
       client:
@@ -14,8 +14,6 @@ spring:
                 - openid
                 - profile
                 - email
-  kafka:
-    bootstrap-servers: localhost:9094
   application:
     name: auto-message
   datasource:
@@ -55,21 +53,3 @@ app:
   frontend:
     redirect-url: ${REDIRECT_URI}
     base-url: ${FRONT_URL}
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          youtube:
-#            client-id: ${YOUTUBE_CLIENT_ID}
-#            client-secret: ${YOUTUBE_CLIENT_SECRET}
-#            scope: https://www.googleapis.com/auth/youtube.readonly
-#            redirect-uri: "{baseUrl}/api/youtube/oauth/callback"
-#            authorization-grant-type: authorization_code
-#            client-name: YouTube
-#        provider:
-#          youtube:
-#            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-#            token-uri: https://oauth2.googleapis.com/token
-#            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-#            user-name-attribute: sub
-

@@ -36,8 +36,6 @@ class OAuth2LoginSuccessHandlerTest {
     @Mock
     private AuthCodeCache authCodeCache;
     @Mock
-    private MessageService messageService;
-    @Mock
     private RefreshTokenIssuer refreshTokenIssuer;
     @Mock
     private OAuth2User oAuth2User;
@@ -46,7 +44,7 @@ class OAuth2LoginSuccessHandlerTest {
 
     @BeforeEach
     void setUp() {
-        handler = new OAuth2LoginSuccessHandler(userRepository, jwtService, authCodeCache, messageService, refreshTokenIssuer);
+        handler = new OAuth2LoginSuccessHandler(userRepository, jwtService, authCodeCache, refreshTokenIssuer);
         ReflectionTestUtils.setField(handler, "frontRedirectUrl", "https://app.example.com/callback");
     }
 
@@ -72,7 +70,6 @@ class OAuth2LoginSuccessHandlerTest {
 
         assertThat(response.getRedirectedUrl()).startsWith("https://app.example.com/callback?code=exchange-code");
         verify(userRepository, never()).save(any());
-        verify(messageService, never()).sendWelcomeMessage(any());
     }
 
     @Test
@@ -102,7 +99,6 @@ class OAuth2LoginSuccessHandlerTest {
         handler.onAuthenticationSuccess(request, response, auth);
 
         verify(userRepository).save(any(User.class));
-        verify(messageService).sendWelcomeMessage(saved);
         assertThat(response.getRedirectedUrl()).startsWith("https://app.example.com/callback?code=exchange-code");
     }
 }
