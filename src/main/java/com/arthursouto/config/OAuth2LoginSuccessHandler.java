@@ -8,6 +8,7 @@ import com.arthursouto.service.MessageService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Objects;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -41,9 +43,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     private User buildUserFromOAuth2(OAuth2User oAuth2User) {
-
         String id = Objects.requireNonNull(oAuth2User.getAttribute("sub"));
         String email = Objects.requireNonNull(oAuth2User.getAttribute("email"));
+        String picture = oAuth2User.getAttribute("picture");
         String name = oAuth2User.getAttribute("name");
 
         return userRepository.findByGoogleId(id).orElseGet(() -> {
@@ -54,6 +56,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                             .email(email)
                             .name(name)
                             .username(buildUsernameTemporary(email, id))
+                            .profileImage(picture)
                             .build()
             );
 

@@ -56,6 +56,7 @@ class OAuth2LoginSuccessHandlerTest {
         when(oAuth2User.getAttribute("sub")).thenReturn("google-42");
         when(oAuth2User.getAttribute("email")).thenReturn(existing.getEmail());
         when(oAuth2User.getAttribute("name")).thenReturn(existing.getName());
+        when(oAuth2User.getAttribute("picture")).thenReturn(existing.getProfileImage());
         when(userRepository.findByGoogleId("google-42")).thenReturn(Optional.of(existing));
         when(jwtService.generateToken(existing)).thenReturn("access-token");
         when(refreshTokenIssuer.generate(existing)).thenReturn("refresh-token");
@@ -79,6 +80,7 @@ class OAuth2LoginSuccessHandlerTest {
         when(oAuth2User.getAttribute("sub")).thenReturn("google-99");
         when(oAuth2User.getAttribute("email")).thenReturn("new.user@example.com");
         when(oAuth2User.getAttribute("name")).thenReturn("New User");
+        when(oAuth2User.getAttribute("picture")).thenReturn("https://example.com/avatar.png");
         when(userRepository.findByGoogleId("google-99")).thenReturn(Optional.empty());
 
         User saved = UserFactory.userBuilder()

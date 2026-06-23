@@ -32,7 +32,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(frontUrl));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH" , "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
@@ -43,7 +43,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
-        String[] allowedPaths = {"/test/**", "/swagger-ui/**", "/v3/api-docs/**", "/oauth2/**\", \"/login/**\", \"/public/**", "/v1/api/auth/exchange", "/v1/api/auth/refresh", "/v1/api/auth/logout"};
+        String[] allowedPaths = {
+                "/test/**",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/oauth2/**",
+                "/login/**",
+                "/public/**",
+                "/v1/api/auth/exchange",
+                "/v1/api/auth/refresh",
+                "/v1/api/auth/logout"
+        };
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -55,7 +65,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(((request, response, authException) ->
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")))
-                        )
+                )
                 .oauth2Login(o -> o
                         .successHandler(oauth2LoginSuccessHandler)
                 )
