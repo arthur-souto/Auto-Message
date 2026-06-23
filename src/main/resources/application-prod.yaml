@@ -14,3 +14,5 @@ spring:
 logging:
   level:
     root: WARN
+server:
+  forward-headers-strategy: framework
