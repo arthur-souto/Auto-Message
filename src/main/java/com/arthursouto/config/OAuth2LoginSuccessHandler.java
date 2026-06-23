@@ -30,7 +30,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final AuthCodeCache authCodeCache;
-    private final MessageService messageService;
     private final RefreshTokenIssuer refreshTokenIssuer;
 
     @Value("${app.frontend.redirect-url}")
@@ -60,7 +59,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                             .build()
             );
 
-            messageService.sendWelcomeMessage(user);
+            // future implement
 
             return user;
         });
