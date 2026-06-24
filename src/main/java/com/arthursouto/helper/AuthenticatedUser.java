@@ -19,6 +19,12 @@ public final class AuthenticatedUser {
         return user;
     }
 
+    public static void isAccountVerified() {
+        if(!get().isVerified()) {
+            throw new UnauthorizedException("Account unverified");
+        }
+    }
+
     public static UUID id() {
         return get().getId();
     }

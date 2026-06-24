@@ -1,11 +1,11 @@
 package com.arthursouto.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,47 +14,38 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "assets", indexes = {
+        @Index(name = "idx_assets_name", columnList = "name")
+})
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
-@SuperBuilder
-public class User {
+@AllArgsConstructor
+public class Asset {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+    @Column(nullable = false, unique = true, length = 20)
+    private String code;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String username;
+    private String supplier;
 
-    @Column(nullable = true)
-    private String profileImage;
-
-    @Column(name = "google_id", unique = true)
-    private String googleId;
-
-    @Column(name = "is_verified", nullable = false)
-    @Builder.Default
-    private boolean isVerified = false;
-
-    @LastModifiedDate
-    @Column(nullable = false)
-    @Builder.Default
-    private Instant updatedAt = Instant.now();
+    @Column(length = 20)
+    private String unit;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    @Builder.Default
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
 
+    @LastModifiedDate
+    @Column(nullable = false)
+    private Instant updatedAt;
 }
-
