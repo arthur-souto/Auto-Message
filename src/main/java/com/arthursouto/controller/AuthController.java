@@ -1,12 +1,12 @@
 package com.arthursouto.controller;
 
-import com.arthursouto.domain.RefreshToken;
 import com.arthursouto.domain.User;
 import com.arthursouto.dto.MeResponse;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.RefreshTokenService;
+import com.arthursouto.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +23,7 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final UserService userService;
 
     public record RefreshRequest(String refreshToken) {}
 
@@ -50,6 +51,11 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+
+    @PutMapping("/active")
+    public void activeMe(@AuthenticationPrincipal User user, @RequestParam String secret) {
+        userService.activeUser(user, secret);
+    }
 
     @GetMapping("/me")
     public MeResponse getMe(@AuthenticationPrincipal User user) {
