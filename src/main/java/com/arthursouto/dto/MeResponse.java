@@ -9,7 +9,8 @@ public record MeResponse(
         String googleId,
         String email,
         String username,
-        String profileImage
+        String profileImage,
+        boolean isVerified
 ) {
     public static MeResponse from(User user) {
         return new MeResponse(
@@ -17,7 +18,8 @@ public record MeResponse(
                 user.getGoogleId(),
                 user.getEmail(),
                 user.getUsername(),
-                user.getProfileImage()
+                user.getProfileImage(),
+                user.isVerified()
         );
     }
 }
