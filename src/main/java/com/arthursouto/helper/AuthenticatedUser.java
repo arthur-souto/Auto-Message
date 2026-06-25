@@ -25,6 +25,16 @@ public final class AuthenticatedUser {
         }
     }
 
+    public static User isAccountVerifiedAndReturn() {
+        final var user = get();
+
+        if(!user.isVerified()) {
+            throw new UnauthorizedException("Account unverified");
+        }
+
+        return user;
+    }
+
     public static UUID id() {
         return get().getId();
     }
