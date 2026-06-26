@@ -5,6 +5,7 @@ import com.arthursouto.exception.AppException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -18,6 +19,12 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleApp(AppException ex, HttpServletResponse res) {
         res.setStatus(ex.getStatus().value());
         return ErrorResponse.of(ex.getStatus().value(), ex.getStatus().getReasonPhrase(), ex.getMessage());
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleAuthorizationDenied(AuthorizationDeniedException ex) {
+        return ErrorResponse.of(HttpStatus.FORBIDDEN.value(), "Forbidden", "Access denied");
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

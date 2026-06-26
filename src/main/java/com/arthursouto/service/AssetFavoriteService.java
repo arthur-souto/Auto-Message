@@ -6,6 +6,7 @@ import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.helper.AuthenticatedUser;
 import com.arthursouto.repository.AssetFavoriteRepository;
 import com.arthursouto.repository.AssetRepository;
+import com.arthursouto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,18 +21,19 @@ public class AssetFavoriteService {
 
     private final AssetFavoriteRepository assetFavoriteRepository;
     private final AssetRepository assetRepository;
+    private final UserRepository userRepository;
 
 
     @Transactional(readOnly = true)
     public Page<AssetFavoriteResponse> findAll(Pageable pageable) {
-        final var user = AuthenticatedUser.isAccountVerifiedAndReturn();
+        final var user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
         return assetFavoriteRepository.findAllByUserId(user.getId(), pageable).map(AssetFavoriteResponse::from);
     }
 
 
     @Transactional
     public void toggleAsset(UUID assetId) {
-        final var user = AuthenticatedUser.isAccountVerifiedAndReturn();
+        final var user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
 
         if(assetFavoriteRepository.existsByUserIdAndAssetId(user.getId(), assetId)) {
             assetFavoriteRepository.deleteByUserIdAndAssetId(user.getId(), assetId);

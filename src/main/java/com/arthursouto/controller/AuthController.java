@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/api/auth")
@@ -53,12 +54,12 @@ public class AuthController {
 
 
     @PutMapping("/active")
-    public void activeMe(@AuthenticationPrincipal User user, @RequestParam String secret) {
-        userService.activeUser(user, secret);
+    public void activeMe(@AuthenticationPrincipal UUID userId, @RequestParam String secret) {
+        userService.activeUser(userId, secret);
     }
 
     @GetMapping("/me")
-    public MeResponse getMe(@AuthenticationPrincipal User user) {
-        return MeResponse.from(user);
+    public MeResponse getMe(@AuthenticationPrincipal UUID userId) {
+        return userService.getUserById(userId);
     }
 }

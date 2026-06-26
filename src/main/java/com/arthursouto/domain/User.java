@@ -1,5 +1,6 @@
 package com.arthursouto.domain;
 
+import com.arthursouto.rules.Role;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,6 +46,10 @@ public class User {
     @Column(name = "is_verified", nullable = false)
     @Builder.Default
     private boolean isVerified = false;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
     @LastModifiedDate
     @Column(nullable = false)

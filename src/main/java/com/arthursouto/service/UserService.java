@@ -4,6 +4,7 @@ import com.arthursouto.domain.User;
 import com.arthursouto.dto.MeResponse;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.exception.UnauthorizedException;
+import com.arthursouto.helper.AuthenticatedUser;
 import com.arthursouto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,10 @@ public class UserService {
     }
 
     @Transactional
-    public void activeUser(User user, String secret) {
+    public void activeUser(UUID userId, String secret) {
+
+        var user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         if(!privateSecret.equals(secret)) {
             throw new UnauthorizedException("Wrong or Invalid [Secret]");
         }

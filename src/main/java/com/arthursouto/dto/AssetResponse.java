@@ -11,6 +11,15 @@ public record AssetResponse(
         String name,
         String supplier,
         String unit,
+        String manufacturer,
+        String composition,
+        String dosage,
+        String mechanism,
+        String associations,
+        String pharmaForms,
+        String literatureUrl,
+        String category,
+        boolean isExclusive,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -21,6 +30,15 @@ public record AssetResponse(
                 asset.getName(),
                 asset.getSupplier(),
                 asset.getUnit(),
+                asset.getManufacturer(),
+                asset.getComposition(),
+                asset.getDosage(),
+                asset.getMechanism(),
+                asset.getAssociations(),
+                asset.getPharmaForms(),
+                asset.getLiteratureUrl(),
+                asset.getCategory(),
+                asset.isExclusive(),
                 asset.getCreatedAt(),
                 asset.getUpdatedAt()
         );
