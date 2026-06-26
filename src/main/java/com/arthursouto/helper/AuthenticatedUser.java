@@ -3,6 +3,7 @@ package com.arthursouto.helper;
 
 import com.arthursouto.domain.User;
 import com.arthursouto.exception.UnauthorizedException;
+import com.arthursouto.repository.UserRepository;
 import lombok.experimental.UtilityClass;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -11,24 +12,18 @@ import java.util.UUID;
 @UtilityClass
 public final class AuthenticatedUser {
 
-    public static User get() {
-        var p = SecurityContextHolder.getContext().getAuthentication();
-        if(p == null || !(p.getPrincipal() instanceof User user)) {
-            throw new UnauthorizedException("User not authenticated");
-        }
-        return user;
-    }
 
-    public static void isAccountVerified() {
-        if(!get().isVerified()) {
+    public static void isAccountVerified(UserRepository userRepository) {
+        if (!userRepository.isVerifiedById(id())) {
             throw new UnauthorizedException("Account unverified");
         }
     }
 
-    public static User isAccountVerifiedAndReturn() {
-        final var user = get();
+    public static User isAccountVerifiedAndReturn(UserRepository userRepository) {
+        User user = userRepository.findById(id())
+                .orElseThrow(() -> new UnauthorizedException("User not found"));
 
-        if(!user.isVerified()) {
+        if (!user.isVerified()) {
             throw new UnauthorizedException("Account unverified");
         }
 
@@ -36,6 +31,10 @@ public final class AuthenticatedUser {
     }
 
     public static UUID id() {
-        return get().getId();
+       var auth = SecurityContextHolder.getContext().getAuthentication();
+       if(auth == null || !(auth.getPrincipal() instanceof  UUID userId)) {
+           throw new UnauthorizedException("User not authenticated");
+       }
+       return userId;
     }
 }

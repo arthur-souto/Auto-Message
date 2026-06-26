@@ -1,6 +1,7 @@
 package com.arthursouto.dto;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.rules.Role;
 
 import java.util.UUID;
 
@@ -10,6 +11,7 @@ public record MeResponse(
         String email,
         String username,
         String profileImage,
+        Role role,
         boolean isVerified
 ) {
     public static MeResponse from(User user) {
@@ -19,6 +21,7 @@ public record MeResponse(
                 user.getEmail(),
                 user.getUsername(),
                 user.getProfileImage(),
+                user.getRole(),
                 user.isVerified()
         );
     }

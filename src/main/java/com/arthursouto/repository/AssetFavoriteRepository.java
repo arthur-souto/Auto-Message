@@ -6,14 +6,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public interface AssetFavoriteRepository extends JpaRepository<AssetFavorite, UUID> {
 
     boolean existsByUserIdAndAssetId(UUID userId, UUID assetId);
-
-    Optional<AssetFavorite> findByUserIdAndAssetId(UUID userId, UUID assetId);
 
     Page<AssetFavorite> findAllByUserId(UUID userId, Pageable pageable);
 
