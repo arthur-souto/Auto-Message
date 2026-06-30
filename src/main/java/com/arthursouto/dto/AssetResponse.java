@@ -2,6 +2,7 @@ package com.arthursouto.dto;
 
 import com.arthursouto.domain.Asset;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -15,11 +16,16 @@ public record AssetResponse(
         String composition,
         String dosage,
         String mechanism,
-        String associations,
         String pharmaForms,
         String literatureUrl,
         String category,
         boolean isExclusive,
+        BigDecimal concentrationMin,
+        BigDecimal concentrationMax,
+        BigDecimal concentrationUsual,
+        String concentrationUnit,
+        String concentrationSource,
+        String concentrationPharmaForm,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -34,11 +40,16 @@ public record AssetResponse(
                 asset.getComposition(),
                 asset.getDosage(),
                 asset.getMechanism(),
-                asset.getAssociations(),
                 asset.getPharmaForms(),
                 asset.getLiteratureUrl(),
                 asset.getCategory(),
                 asset.isExclusive(),
+                asset.getConcentrationMin(),
+                asset.getConcentrationMax(),
+                asset.getConcentrationUsual(),
+                asset.getConcentrationUnit(),
+                asset.getConcentrationSource(),
+                asset.getConcentrationPharmaForm(),
                 asset.getCreatedAt(),
                 asset.getUpdatedAt()
         );

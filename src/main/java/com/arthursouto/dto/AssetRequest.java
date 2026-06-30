@@ -1,6 +1,9 @@
 package com.arthursouto.dto;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+
+import java.math.BigDecimal;
 
 public record AssetRequest(
         @NotBlank String code,
@@ -11,10 +14,15 @@ public record AssetRequest(
         String composition,
         String dosage,
         String mechanism,
-        String associations,
         String pharmaForms,
         String literatureUrl,
         String category,
-        Boolean isExclusive
+        Boolean isExclusive,
+        @DecimalMin("0.0") BigDecimal concentrationMin,
+        @DecimalMin("0.0") BigDecimal concentrationMax,
+        @DecimalMin("0.0") BigDecimal concentrationUsual,
+        String concentrationUnit,
+        String concentrationSource,
+        String concentrationPharmaForm
 ) {
 }

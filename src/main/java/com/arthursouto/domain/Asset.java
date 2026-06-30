@@ -53,9 +53,6 @@ public class Asset {
     @Column(columnDefinition = "TEXT")
     private String mechanism;
 
-    @Column(columnDefinition = "TEXT")
-    private String associations;
-
     @Column(name = "pharma_forms", columnDefinition = "TEXT")
     private String pharmaForms;
 
@@ -69,12 +66,27 @@ public class Asset {
     @Builder.Default
     private boolean isExclusive = false;
 
+    @Column(name = "concentration_min", precision = 10, scale = 4)
+    private java.math.BigDecimal concentrationMin;
+
+    @Column(name = "concentration_max", precision = 10, scale = 4)
+    private java.math.BigDecimal concentrationMax;
+
+    @Column(name = "concentration_usual", precision = 10, scale = 4)
+    private java.math.BigDecimal concentrationUsual;
+
+    @Column(name = "concentration_unit", length = 20)
+    private String concentrationUnit;
+
+    @Column(name = "concentration_source", length = 100)
+    private String concentrationSource;
+
+    @Column(name = "concentration_pharma_form", length = 100)
+    private String concentrationPharmaForm;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
-
-    @OneToMany(mappedBy = "asset", fetch = FetchType.LAZY)
-    private List<AssetIndication> indications;
 
     @LastModifiedDate
     @Column(nullable = false)

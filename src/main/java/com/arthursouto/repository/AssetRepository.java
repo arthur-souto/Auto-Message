@@ -23,6 +23,11 @@ public interface AssetRepository extends JpaRepository<Asset, UUID> {
            WHERE i.asset = a
            AND unaccent(LOWER(i.indication)) LIKE unaccent(LOWER(CONCAT('%', :target, '%')))
        )
+       OR EXISTS (
+           SELECT 1 FROM AssetAssociation i
+            WHERE i.asset = a
+            AND unaccent(LOWER(i.association)) LIKE unaccent(LOWER(CONCAT('%', :target, '%')))    
+           )
     """)
     Page<Asset> searchAssets(@Param("target") String target, Pageable pageable);
 }
