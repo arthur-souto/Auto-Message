@@ -2,11 +2,13 @@ package com.arthursouto.controller;
 
 import com.arthursouto.domain.User;
 import com.arthursouto.dto.MeResponse;
+import com.arthursouto.dto.UserUpdateRequest;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.RefreshTokenService;
 import com.arthursouto.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +54,6 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-
     @PutMapping("/active")
     public void activeMe(@AuthenticationPrincipal UUID userId, @RequestParam String secret) {
         userService.activeUser(userId, secret);
@@ -61,5 +62,10 @@ public class AuthController {
     @GetMapping("/me")
     public MeResponse getMe(@AuthenticationPrincipal UUID userId) {
         return userService.getUserById(userId);
+    }
+
+    @PatchMapping("/me")
+    public MeResponse updateMe(@AuthenticationPrincipal UUID userId, @Valid @RequestBody UserUpdateRequest request) {
+        return userService.updateUser(userId, request);
     }
 }
