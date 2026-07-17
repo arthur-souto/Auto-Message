@@ -1,6 +1,5 @@
 package com.arthursouto.config;
 
-import com.arthursouto.factory.UserFactory;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -16,7 +15,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,20 +47,25 @@ class JwtAuthFilterTest {
     }
 
     @Test
-    void authenticatesUserWhenBearerTokenValid() throws Exception {
-        var user = UserFactory.user();
+    void authenticatesUserWithIdAndRoleFromTokenClaims() throws Exception {
+        UUID userId = UUID.randomUUID();
         var request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer valid-token");
         var response = new MockHttpServletResponse();
 
         when(jwtService.parseClaims("valid-token")).thenReturn(claims);
-        when(claims.getSubject()).thenReturn(user.getId().toString());
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(claims.getSubject()).thenReturn(userId.toString());
+        when(claims.get("role", String.class)).thenReturn("ADMIN");
 
         filter.doFilterInternal(request, response, filterChain);
 
-        assertThat(SecurityContextHolder.getContext().getAuthentication().getPrincipal()).isEqualTo(user);
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertThat(authentication.getPrincipal()).isEqualTo(userId);
+        assertThat(authentication.getAuthorities())
+                .extracting(Object::toString)
+                .containsExactly("ROLE_ADMIN");
         verify(filterChain).doFilter(request, response);
+        verifyNoInteractions(userRepository);
     }
 
     @Test
@@ -74,7 +77,7 @@ class JwtAuthFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(jwtService);
+        verifyNoInteractions(jwtService, userRepository);
     }
 
     @Test
@@ -89,22 +92,19 @@ class JwtAuthFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
+        verifyNoInteractions(userRepository);
     }
 
     @Test
-    void continuesFilterChainWhenUserFromTokenDoesNotExist() throws Exception {
-        var userId = UUID.randomUUID();
+    void ignoresHeaderWithoutBearerPrefix() throws Exception {
         var request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer valid-token");
+        request.addHeader("Authorization", "Basic dXNlcjpwYXNz");
         var response = new MockHttpServletResponse();
-
-        when(jwtService.parseClaims("valid-token")).thenReturn(claims);
-        when(claims.getSubject()).thenReturn(userId.toString());
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         filter.doFilterInternal(request, response, filterChain);
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
+        verifyNoInteractions(jwtService, userRepository);
     }
 }

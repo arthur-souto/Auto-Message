@@ -1,5 +1,6 @@
 package com.arthursouto.service;
 
+import com.arthursouto.domain.Asset;
 import com.arthursouto.dto.AssetResponse;
 import com.arthursouto.dto.AssetUpdateRequest;
 import com.arthursouto.dto.ConcentrationCheckResponse;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +50,36 @@ public class AssetService {
         assetMapper.updateAsset(request, asset);
 
         return AssetResponse.from(assetRepository.save(asset));
+    }
+
+    @Transactional
+    public void deleteAsset(UUID id) {
+        AuthenticatedUser.isAccountVerified(userRepository);
+
+        if (!assetRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Asset not found");
+        }
+
+        assetRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteAssets(List<UUID> ids) {
+        AuthenticatedUser.isAccountVerified(userRepository);
+
+        final var foundIds = assetRepository.findAllById(ids).stream()
+                .map(Asset::getId)
+                .collect(Collectors.toSet());
+
+        final var missingIds = ids.stream()
+                .filter(id -> !foundIds.contains(id))
+                .toList();
+
+        if (!missingIds.isEmpty()) {
+            throw new ResourceNotFoundException("Assets not found: " + missingIds);
+        }
+
+        assetRepository.deleteAllById(ids);
     }
 
     @Transactional(readOnly = true)

@@ -1,11 +1,13 @@
 package com.arthursouto.controller;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.dto.MeResponse;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.factory.UserFactory;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.RefreshTokenService;
+import com.arthursouto.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,8 @@ class AuthControllerTest {
     private UserRepository userRepository;
     @MockitoBean
     private JwtService jwtService;
+    @MockitoBean
+    private UserService userService;
 
     @AfterEach
     void clearContext() {
@@ -100,8 +104,9 @@ class AuthControllerTest {
     void getMeReturnsAuthenticatedUserDetails() throws Exception {
         User user = UserFactory.user();
         SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(user, null)
+                new UsernamePasswordAuthenticationToken(user.getId(), null)
         );
+        when(userService.getUserById(user.getId())).thenReturn(MeResponse.from(user));
 
         mockMvc.perform(get("/v1/api/auth/me"))
                 .andExpect(status().isOk())
