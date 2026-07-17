@@ -49,6 +49,7 @@ public class User {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private Role role = Role.USER;
 
     @LastModifiedDate
