@@ -59,7 +59,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                             .build()
             );
 
-            // future implement
 
             return user;
         });

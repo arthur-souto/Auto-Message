@@ -4,13 +4,15 @@ import com.arthursouto.domain.Asset;
 import com.arthursouto.dto.AssetResponse;
 import com.arthursouto.dto.AssetUpdateRequest;
 import com.arthursouto.dto.ConcentrationCheckResponse;
+import com.arthursouto.exception.ConflictException;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.helper.AuthenticatedUser;
 import com.arthursouto.mapper.AssetMapper;
 import com.arthursouto.repository.AssetRepository;
 import com.arthursouto.repository.UserRepository;
-import com.arthursouto.rules.ConcentrationStatus;
+import com.arthursouto.rules.ConcentrationChecker;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -60,7 +62,12 @@ public class AssetService {
             throw new ResourceNotFoundException("Asset not found");
         }
 
-        assetRepository.deleteById(id);
+        try {
+            assetRepository.deleteById(id);
+            assetRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Asset is used in an existing formula and cannot be deleted");
+        }
     }
 
     @Transactional
@@ -79,7 +86,12 @@ public class AssetService {
             throw new ResourceNotFoundException("Assets not found: " + missingIds);
         }
 
-        assetRepository.deleteAllById(ids);
+        try {
+            assetRepository.deleteAllById(ids);
+            assetRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Some assets are used in existing formulas and cannot be deleted");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -92,16 +104,7 @@ public class AssetService {
         final var min = asset.getConcentrationMin();
         final var max = asset.getConcentrationMax();
 
-        ConcentrationStatus status;
-        if (min == null && max == null) {
-            status = ConcentrationStatus.NO_DATA;
-        } else if (min != null && value.compareTo(min) < 0) {
-            status = ConcentrationStatus.BELOW_MIN;
-        } else if (max != null && value.compareTo(max) > 0) {
-            status = ConcentrationStatus.ABOVE_MAX;
-        } else {
-            status = ConcentrationStatus.WITHIN_RANGE;
-        }
+        final var status = ConcentrationChecker.classify(min, max, value);
 
         return new ConcentrationCheckResponse(
                 value,

@@ -14,6 +14,8 @@ public interface AssetFavoriteRepository extends JpaRepository<AssetFavorite, UU
 
     Page<AssetFavorite> findAllByUserId(UUID userId, Pageable pageable);
 
+    long countByUserId(UUID userId);
+
     @Modifying
     void deleteByUserIdAndAssetId(UUID userId, UUID assetId);
 }

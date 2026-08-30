@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Laudo Técnico de Fórmula</title>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #222222; }
+        h1 { font-size: 18px; margin-bottom: 4px; }
+        h2 { font-size: 13px; margin-top: 20px; margin-bottom: 6px; border-bottom: 1px solid #cccccc; padding-bottom: 4px; }
+        .subtitle { color: #666666; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        th, td { border: 1px solid #cccccc; padding: 6px 8px; text-align: left; font-size: 10px; }
+        th { background-color: #f2f2f2; }
+        .status-within { color: #1a7f37; font-weight: bold; }
+        .status-below, .status-above { color: #c0392b; font-weight: bold; }
+        .status-none { color: #888888; }
+        .warning-box { border: 1px solid #d9822b; background-color: #fdf3e7; padding: 10px; margin-bottom: 10px; }
+        .warning-item { margin-bottom: 4px; }
+        .signature { margin-top: 60px; text-align: center; }
+        .signature-line { border-top: 1px solid #222222; width: 260px; margin: 0 auto 4px auto; }
+        .footer { margin-top: 30px; font-size: 9px; color: #999999; }
+    </style>
+</head>
+<body>
+    <h1>Laudo Técnico de Fórmula</h1>
+    <div class="subtitle">Emitido em <span th:text="${#temporals.format(generatedAt, 'dd/MM/yyyy HH:mm')}">data</span></div>
+
+    <h2>Dados da fórmula</h2>
+    <p><strong>Nome:</strong> <span th:text="${formula.name}">Nome da fórmula</span></p>
+    <p th:if="${formula.description != null and !formula.description.isEmpty()}">
+        <strong>Descrição:</strong> <span th:text="${formula.description}">Descrição</span>
+    </p>
+
+    <h2>Composição</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Ativo</th>
+            <th>Código</th>
+            <th>Quantidade</th>
+            <th>Unidade</th>
+            <th>Concentração</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${formula.items}">
+            <td th:text="${item.assetName}">Ativo</td>
+            <td th:text="${item.assetCode}">COD</td>
+            <td th:text="${item.quantity.stripTrailingZeros().toPlainString()}">0</td>
+            <td th:text="${item.unit}">mg</td>
+            <td th:text="${item.concentration != null ? item.concentration.stripTrailingZeros().toPlainString() : '-'}">-</td>
+            <td>
+                <span th:if="${item.concentrationStatus == null}" class="status-none">Sem verificação</span>
+                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'WITHIN_RANGE'}" class="status-within">Dentro da faixa</span>
+                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'BELOW_MIN'}" class="status-below">Abaixo do mínimo</span>
+                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'ABOVE_MAX'}" class="status-above">Acima do máximo</span>
+                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'NO_DATA'}" class="status-none">Sem dados de referência</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="warning-box" th:if="${!formula.incompatibilities.isEmpty()}">
+        <strong>Avisos de incompatibilidade</strong>
+        <div class="warning-item" th:each="w : ${formula.incompatibilities}">
+            <span th:text="${w.assetAName}">A</span> + <span th:text="${w.assetBName}">B</span>:
+            <span th:text="${w.reason}">motivo</span>
+        </div>
+    </div>
+
+    <div class="signature">
+        <div class="signature-line"></div>
+        <div th:if="${formula.doctor != null}">
+            <div th:text="${formula.doctor.name}">Nome do médico</div>
+            <div th:text="'CRM ' + ${formula.doctor.crm}">CRM</div>
+            <div th:if="${formula.doctor.specialty != null and !formula.doctor.specialty.isEmpty()}"
+                 th:text="${formula.doctor.specialty}">Especialidade</div>
+        </div>
+        <div th:unless="${formula.doctor != null}" class="status-none">Prescritor não informado</div>
+    </div>
+
+    <div class="footer">
+        Documento gerado automaticamente pelo sistema. Não substitui avaliação profissional presencial quando aplicável.
+    </div>
+</body>
+</html>
