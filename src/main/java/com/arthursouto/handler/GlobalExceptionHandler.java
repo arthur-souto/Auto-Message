@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @Slf4j
 @RestControllerAdvice
@@ -36,6 +37,12 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed");
 
         return ErrorResponse.of(HttpStatus.BAD_REQUEST.value(), "Bad Request", message);
+    }
+
+    @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ErrorResponse handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
+        return ErrorResponse.of(HttpStatus.PAYLOAD_TOO_LARGE.value(), "Payload Too Large", "Uploaded file exceeds the maximum allowed size");
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
