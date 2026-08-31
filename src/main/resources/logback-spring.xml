@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- %X{requestId} vem do CorrelationIdFilter (MDC) -->
+    <!-- %logger{36} mostra o nome da classe (abreviado) que gerou o log -->
+    <property name="LOG_PATTERN"
+              value="%d{HH:mm:ss.SSS} [%thread] [reqId=%X{requestId:-none}] %-5level %logger{36} - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Deixa o AOP mais "quieto" em produção, mas detalhado em dev -->
+    <springProfile name="dev">
+        <logger name="com.arthursouto.logging" level="INFO"/>
+        <logger name="com.arthursouto" level="DEBUG"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="prod">
+        <logger name="com.arthursouto.logging" level="WARN"/>
+        <logger name="com.arthursouto" level="INFO"/>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

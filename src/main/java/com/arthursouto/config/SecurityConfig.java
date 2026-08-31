@@ -1,5 +1,6 @@
 package com.arthursouto.config;
 
+import com.arthursouto.logging.CorrelationIdFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final OAuth2LoginSuccessHandler oauth2LoginSuccessHandler;
+    private final CorrelationIdFilter correlationIdFilter = new CorrelationIdFilter();
     private final JwtAuthFilter jwtAuthFilter;
 
     @Value("${app.frontend.base-url}")
@@ -78,6 +80,7 @@ public class SecurityConfig {
                             response.getWriter().write("{\"error\": \"" + exception.getMessage() + "\"}");
                         })
                 )
+                .addFilterBefore(correlationIdFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         ;
         return http.build();

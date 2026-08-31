@@ -12,6 +12,7 @@ import com.arthursouto.repository.AssetIncompatibilityRepository;
 import com.arthursouto.repository.AssetRepository;
 import com.arthursouto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class
@@ -27,6 +29,8 @@ AssetIncompatibilityService {
     private final AssetIncompatibilityRepository assetIncompatibilityRepository;
     private final AssetRepository assetRepository;
     private final UserRepository userRepository;
+
+    private static final int INCOMPATIBILITY_COMPARE_THRESHOLD = 0;
 
     @Transactional(readOnly = true)
     public Page<AssetIncompatibilityResponse> findAllByAssetId(UUID assetId, Pageable pageable) {
@@ -45,6 +49,7 @@ AssetIncompatibilityService {
         AuthenticatedUser.isAccountVerified(userRepository);
 
         if (assetId.equals(request.otherAssetId())) {
+            log.info("Attempted to create an incompatibility between asset {} and itself", assetId);
             throw new BadRequestException("An asset cannot be incompatible with itself");
         }
 
@@ -54,10 +59,13 @@ AssetIncompatibilityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Other asset not found"));
 
         if (assetIncompatibilityRepository.findByAssetPair(assetId, request.otherAssetId()).isPresent()) {
+            log.info("Attempted to create an incompatibility between asset {} and asset {} that already exists", assetId, request.otherAssetId());
             throw new ConflictException("Incompatibility between these assets already exists");
         }
 
-        boolean assetIsA = assetId.toString().compareTo(request.otherAssetId().toString()) < 0;
+        boolean assetIsA = assetId.toString().compareTo(request.otherAssetId().toString()) < INCOMPATIBILITY_COMPARE_THRESHOLD;
+
+        log.info("Asset {} is {} in the incompatibility pair with asset {}", assetId, assetIsA ? "A" : "B", request.otherAssetId());
 
         AssetIncompatibility incompatibility = AssetIncompatibility.builder()
                 .assetA(assetIsA ? asset : other)

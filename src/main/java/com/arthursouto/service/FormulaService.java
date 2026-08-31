@@ -19,6 +19,7 @@ import com.arthursouto.repository.DoctorRepository;
 import com.arthursouto.repository.FormulaRepository;
 import com.arthursouto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FormulaService {
@@ -58,16 +60,22 @@ public class FormulaService {
     public FormulaResponse create(FormulaRequest request) {
         User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
 
+        Doctor doctor = resolveDoctor(user, request.doctorId());
+
         Formula formula = Formula.builder()
                 .user(user)
                 .name(request.name())
                 .description(request.description())
-                .doctor(resolveDoctor(user, request.doctorId()))
+                .doctor(doctor)
                 .build();
 
         formula.getItems().addAll(buildItems(formula, request.items()));
 
-        return toResponse(formulaRepository.save(formula));
+        Formula saved = formulaRepository.save(formula);
+
+        log.info("Created formula with ID: {}", saved.getId());
+
+        return toResponse(saved);
     }
 
     @Transactional
@@ -116,6 +124,7 @@ public class FormulaService {
                 .toList();
 
         if (!missingIds.isEmpty()) {
+            log.info("Assets not found for formula {}: {}", formula.getId(), missingIds);
             throw new ResourceNotFoundException("Assets not found: " + missingIds);
         }
 
