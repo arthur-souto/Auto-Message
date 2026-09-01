@@ -67,11 +67,34 @@ class FormulaPdfServiceTest {
                 doctor,
                 List.of(withinRange, noStatus),
                 List.of(warning),
+                null,
+                null,
                 Instant.now(),
                 Instant.now()
         );
 
-        byte[] pdf = formulaPdfService.render(formula);
+        byte[] pdf = formulaPdfService.render(formula, null);
+
+        assertThat(pdf).isNotEmpty();
+        assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
+    }
+
+    @Test
+    void rendersPdfWithDigitalSignatureBlockWhenSigning() {
+        FormulaItemResponse item = new FormulaItemResponse(
+                UUID.randomUUID(), UUID.randomUUID(), "Vitamina C", "AT0006",
+                BigDecimal.valueOf(500), "mg", null, null
+        );
+
+        FormulaResponse formula = new FormulaResponse(
+                UUID.randomUUID(), "Fórmula assinada", null, null,
+                List.of(item), List.of(), null, null, Instant.now(), Instant.now()
+        );
+
+        FormulaPdfService.DigitalSignatureInfo signatureInfo =
+                new FormulaPdfService.DigitalSignatureInfo("CN=Pierre de Fermat,O=Lacuna Software,C=BR", Instant.now());
+
+        byte[] pdf = formulaPdfService.render(formula, signatureInfo);
 
         assertThat(pdf).isNotEmpty();
         assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
@@ -86,10 +109,10 @@ class FormulaPdfServiceTest {
 
         FormulaResponse formula = new FormulaResponse(
                 UUID.randomUUID(), "Fórmula simples", null, null,
-                List.of(item), List.of(), Instant.now(), Instant.now()
+                List.of(item), List.of(), null, null, Instant.now(), Instant.now()
         );
 
-        byte[] pdf = formulaPdfService.render(formula);
+        byte[] pdf = formulaPdfService.render(formula, null);
 
         assertThat(pdf).isNotEmpty();
         assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");

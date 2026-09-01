@@ -18,6 +18,10 @@
         .warning-item { margin-bottom: 4px; }
         .signature { margin-top: 60px; text-align: center; }
         .signature-line { border-top: 1px solid #222222; width: 260px; margin: 0 auto 4px auto; }
+        .digital-signature-box { border: 1px solid #1a7f37; background-color: #eaf7ee; padding: 10px 12px; margin-top: 24px; }
+        .digital-signature-title { color: #1a7f37; font-weight: bold; margin-bottom: 4px; }
+        .digital-signature-detail { color: #333333; }
+        .digital-signature-box-none { border: 1px solid #cccccc; background-color: #f5f5f5; padding: 10px 12px; margin-top: 24px; color: #888888; }
         .footer { margin-top: 30px; font-size: 9px; color: #999999; }
     </style>
 </head>
@@ -78,6 +82,19 @@
                  th:text="${formula.doctor.specialty}">Especialidade</div>
         </div>
         <div th:unless="${formula.doctor != null}" class="status-none">Prescritor não informado</div>
+    </div>
+
+    <div class="digital-signature-box" th:if="${digitalSignature != null}">
+        <div class="digital-signature-title">&#10003; Documento assinado digitalmente (ICP-Brasil)</div>
+        <div class="digital-signature-detail">
+            Assinado usando certificado: <span th:text="${digitalSignature.certificateSubject()}">CN=...</span>
+        </div>
+        <div class="digital-signature-detail">
+            Data da assinatura: <span th:text="${#temporals.format(digitalSignature.signingDate(), 'dd/MM/yyyy HH:mm')}">data</span>
+        </div>
+    </div>
+    <div class="digital-signature-box-none" th:unless="${digitalSignature != null}">
+        &#9888; Documento não assinado digitalmente — este é apenas um rascunho, sem validade de assinatura ICP-Brasil.
     </div>
 
     <div class="footer">

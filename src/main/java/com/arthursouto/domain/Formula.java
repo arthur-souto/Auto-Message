@@ -50,6 +50,14 @@ public class Formula {
     @Builder.Default
     private List<FormulaItem> items = new ArrayList<>();
 
+    @Column(columnDefinition = "bytea")
+    private byte[] signedPdf;
+
+    private Instant signedAt;
+
+    @Column(name = "signed_by_certificate_subject")
+    private String signedByCertificateSubject;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

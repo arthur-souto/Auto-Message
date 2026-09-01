@@ -91,6 +91,15 @@ public class FormulaService {
         formula.getItems().clear();
         formula.getItems().addAll(buildItems(formula, request.items()));
 
+        // A signed PDF is a snapshot of the formula's content at signing time — editing the
+        // formula afterwards would leave a "valid" signature over content that no longer
+        // matches. Clear it so the UI shows "not signed" and the doctor re-signs if needed.
+        if (formula.getSignedPdf() != null) {
+            formula.setSignedPdf(null);
+            formula.setSignedAt(null);
+            formula.setSignedByCertificateSubject(null);
+        }
+
         return toResponse(formulaRepository.save(formula));
     }
 
@@ -170,6 +179,8 @@ public class FormulaService {
                 doctor,
                 items,
                 incompatibilities,
+                formula.getSignedAt(),
+                formula.getSignedByCertificateSubject(),
                 formula.getCreatedAt(),
                 formula.getUpdatedAt()
         );

@@ -11,6 +11,8 @@ public record FormulaResponse(
         DoctorResponse doctor,
         List<FormulaItemResponse> items,
         List<IncompatibilityWarningResponse> incompatibilities,
+        Instant signedAt,
+        String signedByCertificateSubject,
         Instant createdAt,
         Instant updatedAt
 ) {

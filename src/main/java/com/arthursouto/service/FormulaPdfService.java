@@ -20,15 +20,30 @@ public class FormulaPdfService {
     private final FormulaService formulaService;
     private final SpringTemplateEngine templateEngine;
 
-    public byte[] generatePdf(UUID formulaId) {
-        FormulaResponse formula = formulaService.findById(formulaId);
-        return render(formula);
+    /** Signature block shown printed on the "assinado por CN=..." certificate line in the PDF. */
+    public record DigitalSignatureInfo(String certificateSubject, Instant signingDate) {
     }
 
-    byte[] render(FormulaResponse formula) {
+    public byte[] generatePdf(UUID formulaId) {
+        FormulaResponse formula = formulaService.findById(formulaId);
+        return render(formula, null);
+    }
+
+    /**
+     * Renders the exact bytes that get cryptographically signed — the certificate subject and
+     * signing date must be known and fixed *before* rendering, so the "assinado digitalmente"
+     * text printed in the PDF and the real ICP-Brasil signature always agree with each other.
+     */
+    public byte[] generatePdfForSigning(UUID formulaId, String certificateSubject, Instant signingDate) {
+        FormulaResponse formula = formulaService.findById(formulaId);
+        return render(formula, new DigitalSignatureInfo(certificateSubject, signingDate));
+    }
+
+    byte[] render(FormulaResponse formula, DigitalSignatureInfo digitalSignature) {
         Context context = new Context();
         context.setVariable("formula", formula);
         context.setVariable("generatedAt", Instant.now());
+        context.setVariable("digitalSignature", digitalSignature);
 
         log.info("Generating PDF for formula ID: {}", formula.id());
 
