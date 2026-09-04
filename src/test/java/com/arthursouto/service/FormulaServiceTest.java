@@ -16,6 +16,7 @@ import com.arthursouto.repository.AssetIncompatibilityRepository;
 import com.arthursouto.repository.AssetRepository;
 import com.arthursouto.repository.DoctorRepository;
 import com.arthursouto.repository.FormulaRepository;
+import com.arthursouto.repository.PatientRepository;
 import com.arthursouto.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,9 @@ class FormulaServiceTest {
     @Mock
     private DoctorRepository doctorRepository;
 
+    @Mock
+    private PatientRepository patientRepository;
+
     @InjectMocks
     private FormulaService formulaService;
 
@@ -82,7 +86,7 @@ class FormulaServiceTest {
         when(formulaRepository.save(any(Formula.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         FormulaItemRequest itemRequest = new FormulaItemRequest(asset.getId(), BigDecimal.TEN, "mg", BigDecimal.valueOf(5));
-        FormulaRequest request = new FormulaRequest("Fórmula emagrecimento", "desc", null, List.of(itemRequest));
+        FormulaRequest request = new FormulaRequest("Fórmula emagrecimento", "desc", null, null, null, null, List.of(itemRequest));
 
         FormulaResponse response = formulaService.create(request);
 
@@ -99,7 +103,7 @@ class FormulaServiceTest {
         when(assetRepository.findAllById(List.of(missingAssetId))).thenReturn(List.of());
 
         FormulaItemRequest itemRequest = new FormulaItemRequest(missingAssetId, BigDecimal.TEN, "mg", null);
-        FormulaRequest request = new FormulaRequest("Fórmula", null, null, List.of(itemRequest));
+        FormulaRequest request = new FormulaRequest("Fórmula", null, null, null, null, null, List.of(itemRequest));
 
         assertThatThrownBy(() -> formulaService.create(request))
                 .isInstanceOf(ResourceNotFoundException.class)

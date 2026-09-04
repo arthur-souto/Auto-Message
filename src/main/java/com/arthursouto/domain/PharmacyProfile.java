@@ -11,54 +11,45 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "formulas", indexes = {
-        @Index(name = "idx_formulas_user_id", columnList = "user_id")
-})
+@Table(name = "pharmacy_profiles")
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Formula {
+public class PharmacyProfile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(name = "pharmacy_name")
+    private String pharmacyName;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String address;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id")
-    private Doctor doctor;
+    private String phone;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id")
-    private Patient patient;
+    private String email;
 
-    @Column(columnDefinition = "TEXT")
-    private String posology;
+    @Column(name = "responsible_name")
+    private String responsibleName;
 
-    @Column(length = 100)
-    private String quantity;
+    @Column(name = "responsible_document")
+    private String responsibleDocument;
 
-    @OneToMany(mappedBy = "formula", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<FormulaItem> items = new ArrayList<>();
+    @Column(name = "responsible_registration")
+    private String responsibleRegistration;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

@@ -9,10 +9,11 @@ public record FormulaResponse(
         String name,
         String description,
         DoctorResponse doctor,
+        PatientResponse patient,
+        String posology,
+        String quantity,
         List<FormulaItemResponse> items,
         List<IncompatibilityWarningResponse> incompatibilities,
-        Instant signedAt,
-        String signedByCertificateSubject,
         Instant createdAt,
         Instant updatedAt
 ) {

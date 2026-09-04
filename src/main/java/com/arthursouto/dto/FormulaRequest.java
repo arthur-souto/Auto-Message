@@ -11,6 +11,9 @@ public record FormulaRequest(
         @NotBlank String name,
         String description,
         UUID doctorId,
+        UUID patientId,
+        String posology,
+        String quantity,
         @NotEmpty @Valid List<FormulaItemRequest> items
 ) {
 }

@@ -4,6 +4,8 @@ import com.arthursouto.dto.DoctorResponse;
 import com.arthursouto.dto.FormulaItemResponse;
 import com.arthursouto.dto.FormulaResponse;
 import com.arthursouto.dto.IncompatibilityWarningResponse;
+import com.arthursouto.dto.PatientResponse;
+import com.arthursouto.dto.PharmacyProfileResponse;
 import com.arthursouto.rules.ConcentrationStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,11 +37,11 @@ class FormulaPdfServiceTest {
         templateEngine.setTemplateResolver(resolver);
         templateEngine.addDialect(new Java8TimeDialect());
 
-        formulaPdfService = new FormulaPdfService(null, templateEngine);
+        formulaPdfService = new FormulaPdfService(null, null, templateEngine);
     }
 
     @Test
-    void rendersAValidPdfDocumentWithItemsWarningsAndDoctor() {
+    void rendersAValidPdfDocumentWithItemsWarningsDoctorPatientAndPharmacyProfile() {
         FormulaItemResponse withinRange = new FormulaItemResponse(
                 UUID.randomUUID(), UUID.randomUUID(), "Melatonina", "AT0001",
                 BigDecimal.valueOf(3), "mg", BigDecimal.valueOf(2), ConcentrationStatus.WITHIN_RANGE
@@ -60,56 +62,47 @@ class FormulaPdfServiceTest {
                 Instant.now(), Instant.now()
         );
 
+        PatientResponse patient = new PatientResponse(
+                UUID.randomUUID(), "João Pereira", "123.456.789-00", null, "(11) 99999-0000", null, null, null,
+                Instant.now(), Instant.now()
+        );
+
+        PharmacyProfileResponse pharmacyProfile = new PharmacyProfileResponse(
+                UUID.randomUUID(), "Farmácia Exemplo", "Rua das Flores, 123", "(11) 3333-4444",
+                "contato@farmaciaexemplo.com.br", "Dra. Maria Souza", "037.261.499-02", "CRF 115070/SP",
+                Instant.now(), Instant.now()
+        );
+
         FormulaResponse formula = new FormulaResponse(
                 UUID.randomUUID(),
                 "Fórmula Energia e Foco",
                 "Cápsula manipulada para fadiga",
                 doctor,
+                patient,
+                "1 dose após o café da manhã",
+                "30 doses",
                 List.of(withinRange, noStatus),
                 List.of(warning),
-                null,
-                null,
                 Instant.now(),
                 Instant.now()
         );
 
-        byte[] pdf = formulaPdfService.render(formula, null);
+        byte[] pdf = formulaPdfService.render(formula, pharmacyProfile);
 
         assertThat(pdf).isNotEmpty();
         assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
     }
 
     @Test
-    void rendersPdfWithDigitalSignatureBlockWhenSigning() {
+    void rendersPdfWithoutDoctorPatientOrPharmacyProfile() {
         FormulaItemResponse item = new FormulaItemResponse(
                 UUID.randomUUID(), UUID.randomUUID(), "Vitamina C", "AT0006",
                 BigDecimal.valueOf(500), "mg", null, null
         );
 
         FormulaResponse formula = new FormulaResponse(
-                UUID.randomUUID(), "Fórmula assinada", null, null,
-                List.of(item), List.of(), null, null, Instant.now(), Instant.now()
-        );
-
-        FormulaPdfService.DigitalSignatureInfo signatureInfo =
-                new FormulaPdfService.DigitalSignatureInfo("CN=Pierre de Fermat,O=Lacuna Software,C=BR", Instant.now());
-
-        byte[] pdf = formulaPdfService.render(formula, signatureInfo);
-
-        assertThat(pdf).isNotEmpty();
-        assertThat(new String(pdf, 0, 4)).isEqualTo("%PDF");
-    }
-
-    @Test
-    void rendersPdfWithoutDoctorOrWarnings() {
-        FormulaItemResponse item = new FormulaItemResponse(
-                UUID.randomUUID(), UUID.randomUUID(), "Vitamina C", "AT0006",
-                BigDecimal.valueOf(500), "mg", null, null
-        );
-
-        FormulaResponse formula = new FormulaResponse(
-                UUID.randomUUID(), "Fórmula simples", null, null,
-                List.of(item), List.of(), null, null, Instant.now(), Instant.now()
+                UUID.randomUUID(), "Fórmula simples", null, null, null, null, null,
+                List.of(item), List.of(), Instant.now(), Instant.now()
         );
 
         byte[] pdf = formulaPdfService.render(formula, null);

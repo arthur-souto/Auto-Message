@@ -1,6 +1,9 @@
 package com.arthursouto.service;
 
 import com.arthursouto.dto.FormulaResponse;
+import com.arthursouto.dto.PharmacyProfileResponse;
+import com.arthursouto.helper.AuthenticatedUser;
+import com.arthursouto.repository.PharmacyProfileRepository;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,32 +21,24 @@ import java.util.UUID;
 public class FormulaPdfService {
 
     private final FormulaService formulaService;
+    private final PharmacyProfileRepository pharmacyProfileRepository;
     private final SpringTemplateEngine templateEngine;
-
-    /** Signature block shown printed on the "assinado por CN=..." certificate line in the PDF. */
-    public record DigitalSignatureInfo(String certificateSubject, Instant signingDate) {
-    }
 
     public byte[] generatePdf(UUID formulaId) {
         FormulaResponse formula = formulaService.findById(formulaId);
-        return render(formula, null);
+
+        PharmacyProfileResponse pharmacyProfile = pharmacyProfileRepository.findByUserId(AuthenticatedUser.id())
+                .map(PharmacyProfileResponse::from)
+                .orElse(null);
+
+        return render(formula, pharmacyProfile);
     }
 
-    /**
-     * Renders the exact bytes that get cryptographically signed — the certificate subject and
-     * signing date must be known and fixed *before* rendering, so the "assinado digitalmente"
-     * text printed in the PDF and the real ICP-Brasil signature always agree with each other.
-     */
-    public byte[] generatePdfForSigning(UUID formulaId, String certificateSubject, Instant signingDate) {
-        FormulaResponse formula = formulaService.findById(formulaId);
-        return render(formula, new DigitalSignatureInfo(certificateSubject, signingDate));
-    }
-
-    byte[] render(FormulaResponse formula, DigitalSignatureInfo digitalSignature) {
+    byte[] render(FormulaResponse formula, PharmacyProfileResponse pharmacyProfile) {
         Context context = new Context();
         context.setVariable("formula", formula);
+        context.setVariable("pharmacyProfile", pharmacyProfile);
         context.setVariable("generatedAt", Instant.now());
-        context.setVariable("digitalSignature", digitalSignature);
 
         log.info("Generating PDF for formula ID: {}", formula.id());
 

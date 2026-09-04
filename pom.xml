@@ -29,7 +29,6 @@
 	<properties>
 		<java.version>21</java.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
-		<dss.version>6.5</dss.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -61,37 +60,6 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.18.0</version>
-		</dependency>
-		<!-- ICP-Brasil / PAdES digital signature: uses OpenPDF (not PDFBox) to avoid a
-		     major-version clash with openhtmltopdf-pdfbox's PDFBox 2.0.24 dependency.
-		     Deliberately NOT importing dss-bom: it pins org.apache.pdfbox:pdfbox to 3.0.8
-		     project-wide via dependencyManagement, which silently overrides
-		     openhtmltopdf-pdfbox's own transitive 2.0.24 even though dss-pades-pdfbox
-		     itself isn't used — pinning versions directly here avoids that. -->
-		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-pades-openpdf</artifactId>
-			<version>${dss.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-utils-apache-commons</artifactId>
-			<version>${dss.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-cms-object</artifactId>
-			<version>${dss.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-validation</artifactId>
-			<version>${dss.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-policy-jaxb</artifactId>
-			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

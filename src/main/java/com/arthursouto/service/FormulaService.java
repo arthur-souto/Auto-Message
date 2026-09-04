@@ -4,6 +4,7 @@ import com.arthursouto.domain.Asset;
 import com.arthursouto.domain.Doctor;
 import com.arthursouto.domain.Formula;
 import com.arthursouto.domain.FormulaItem;
+import com.arthursouto.domain.Patient;
 import com.arthursouto.domain.User;
 import com.arthursouto.dto.DoctorResponse;
 import com.arthursouto.dto.FormulaItemRequest;
@@ -11,12 +12,14 @@ import com.arthursouto.dto.FormulaItemResponse;
 import com.arthursouto.dto.FormulaRequest;
 import com.arthursouto.dto.FormulaResponse;
 import com.arthursouto.dto.IncompatibilityWarningResponse;
+import com.arthursouto.dto.PatientResponse;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.helper.AuthenticatedUser;
 import com.arthursouto.repository.AssetIncompatibilityRepository;
 import com.arthursouto.repository.AssetRepository;
 import com.arthursouto.repository.DoctorRepository;
 import com.arthursouto.repository.FormulaRepository;
+import com.arthursouto.repository.PatientRepository;
 import com.arthursouto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +43,7 @@ public class FormulaService {
     private final UserRepository userRepository;
     private final AssetIncompatibilityRepository assetIncompatibilityRepository;
     private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
 
     @Transactional(readOnly = true)
     public Page<FormulaResponse> findAll(Pageable pageable) {
@@ -61,12 +65,16 @@ public class FormulaService {
         User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
 
         Doctor doctor = resolveDoctor(user, request.doctorId());
+        Patient patient = resolvePatient(user, request.patientId());
 
         Formula formula = Formula.builder()
                 .user(user)
                 .name(request.name())
                 .description(request.description())
                 .doctor(doctor)
+                .patient(patient)
+                .posology(request.posology())
+                .quantity(request.quantity())
                 .build();
 
         formula.getItems().addAll(buildItems(formula, request.items()));
@@ -87,18 +95,12 @@ public class FormulaService {
         formula.setName(request.name());
         formula.setDescription(request.description());
         formula.setDoctor(resolveDoctor(user, request.doctorId()));
+        formula.setPatient(resolvePatient(user, request.patientId()));
+        formula.setPosology(request.posology());
+        formula.setQuantity(request.quantity());
 
         formula.getItems().clear();
         formula.getItems().addAll(buildItems(formula, request.items()));
-
-        // A signed PDF is a snapshot of the formula's content at signing time — editing the
-        // formula afterwards would leave a "valid" signature over content that no longer
-        // matches. Clear it so the UI shows "not signed" and the doctor re-signs if needed.
-        if (formula.getSignedPdf() != null) {
-            formula.setSignedPdf(null);
-            formula.setSignedAt(null);
-            formula.setSignedByCertificateSubject(null);
-        }
 
         return toResponse(formulaRepository.save(formula));
     }
@@ -119,6 +121,15 @@ public class FormulaService {
 
         return doctorRepository.findByIdAndUserId(doctorId, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
+    }
+
+    private Patient resolvePatient(User user, UUID patientId) {
+        if (patientId == null) {
+            return null;
+        }
+
+        return patientRepository.findByIdAndUserId(patientId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
     }
 
     private List<FormulaItem> buildItems(Formula formula, List<FormulaItemRequest> requests) {
@@ -171,16 +182,18 @@ public class FormulaService {
                         .toList();
 
         DoctorResponse doctor = formula.getDoctor() == null ? null : DoctorResponse.from(formula.getDoctor());
+        PatientResponse patient = formula.getPatient() == null ? null : PatientResponse.from(formula.getPatient());
 
         return new FormulaResponse(
                 formula.getId(),
                 formula.getName(),
                 formula.getDescription(),
                 doctor,
+                patient,
+                formula.getPosology(),
+                formula.getQuantity(),
                 items,
                 incompatibilities,
-                formula.getSignedAt(),
-                formula.getSignedByCertificateSubject(),
                 formula.getCreatedAt(),
                 formula.getUpdatedAt()
         );

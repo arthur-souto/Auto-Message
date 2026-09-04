@@ -11,13 +11,12 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "formulas", indexes = {
-        @Index(name = "idx_formulas_user_id", columnList = "user_id")
+@Table(name = "patients", indexes = {
+        @Index(name = "idx_patients_user_id", columnList = "user_id")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -25,7 +24,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Formula {
+public class Patient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -39,26 +38,20 @@ public class Formula {
     @Column(nullable = false)
     private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    @Column(nullable = false, length = 20)
+    private String document;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id")
-    private Doctor doctor;
+    private LocalDate birthDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patient_id")
-    private Patient patient;
+    private String phone;
+
+    private String email;
 
     @Column(columnDefinition = "TEXT")
-    private String posology;
+    private String address;
 
-    @Column(length = 100)
-    private String quantity;
-
-    @OneToMany(mappedBy = "formula", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<FormulaItem> items = new ArrayList<>();
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
