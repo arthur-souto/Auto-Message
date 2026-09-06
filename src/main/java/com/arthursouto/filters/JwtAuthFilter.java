@@ -1,6 +1,5 @@
-package com.arthursouto.config;
+package com.arthursouto.filters;
 
-import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, @NonNull HttpServletResponse res, @NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -37,11 +35,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             try {
                 Claims claims = jwtService.parseClaims(token);
+
                 UUID userId = UUID.fromString(claims.getSubject());
                 String role = claims.get("role", String.class);
 
                 var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
                 var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
             catch (JwtException ignored) {

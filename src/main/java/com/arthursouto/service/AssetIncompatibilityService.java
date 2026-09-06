@@ -7,10 +7,8 @@ import com.arthursouto.dto.AssetIncompatibilityResponse;
 import com.arthursouto.exception.BadRequestException;
 import com.arthursouto.exception.ConflictException;
 import com.arthursouto.exception.ResourceNotFoundException;
-import com.arthursouto.helper.AuthenticatedUser;
 import com.arthursouto.repository.AssetIncompatibilityRepository;
 import com.arthursouto.repository.AssetRepository;
-import com.arthursouto.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,14 +26,11 @@ AssetIncompatibilityService {
 
     private final AssetIncompatibilityRepository assetIncompatibilityRepository;
     private final AssetRepository assetRepository;
-    private final UserRepository userRepository;
 
     private static final int INCOMPATIBILITY_COMPARE_THRESHOLD = 0;
 
     @Transactional(readOnly = true)
     public Page<AssetIncompatibilityResponse> findAllByAssetId(UUID assetId, Pageable pageable) {
-        AuthenticatedUser.isAccountVerified(userRepository);
-
         if (!assetRepository.existsById(assetId)) {
             throw new ResourceNotFoundException("Asset not found");
         }
@@ -46,8 +41,6 @@ AssetIncompatibilityService {
 
     @Transactional
     public AssetIncompatibilityResponse addIncompatibility(UUID assetId, AssetIncompatibilityRequest request) {
-        AuthenticatedUser.isAccountVerified(userRepository);
-
         if (assetId.equals(request.otherAssetId())) {
             log.info("Attempted to create an incompatibility between asset {} and itself", assetId);
             throw new BadRequestException("An asset cannot be incompatible with itself");
@@ -78,8 +71,6 @@ AssetIncompatibilityService {
 
     @Transactional
     public void deleteIncompatibility(UUID assetId, UUID incompatibilityId) {
-        AuthenticatedUser.isAccountVerified(userRepository);
-
         AssetIncompatibility incompatibility = assetIncompatibilityRepository
                 .findByIdAndInvolvingAsset(incompatibilityId, assetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Incompatibility not found"));

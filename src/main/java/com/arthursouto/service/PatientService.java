@@ -27,13 +27,13 @@ public class PatientService {
 
     @Transactional(readOnly = true)
     public Page<PatientResponse> findAll(Pageable pageable) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         return patientRepository.findAllByUserId(user.getId(), pageable).map(PatientResponse::from);
     }
 
     @Transactional(readOnly = true)
     public PatientResponse findById(UUID id) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         Patient patient = patientRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
 
@@ -42,7 +42,7 @@ public class PatientService {
 
     @Transactional
     public PatientResponse create(PatientRequest request) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
 
         Patient patient = Patient.builder()
                 .user(user)
@@ -64,7 +64,7 @@ public class PatientService {
 
     @Transactional
     public PatientResponse update(UUID id, PatientRequest request) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         Patient patient = patientRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
 
@@ -87,7 +87,7 @@ public class PatientService {
 
     @Transactional
     public void delete(UUID id) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         Patient patient = patientRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
 

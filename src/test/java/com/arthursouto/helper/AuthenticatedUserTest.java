@@ -61,55 +61,24 @@ class AuthenticatedUserTest {
     }
 
     @Test
-    void isAccountVerifiedPassesWhenUserIsVerified() {
-        UUID userId = UUID.randomUUID();
-        authenticateAs(userId);
-        when(userRepository.isVerifiedById(userId)).thenReturn(true);
-
-        AuthenticatedUser.isAccountVerified(userRepository);
-    }
-
-    @Test
-    void isAccountVerifiedThrowsWhenUserIsNotVerified() {
-        UUID userId = UUID.randomUUID();
-        authenticateAs(userId);
-        when(userRepository.isVerifiedById(userId)).thenReturn(false);
-
-        assertThatThrownBy(() -> AuthenticatedUser.isAccountVerified(userRepository))
-                .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Account unverified");
-    }
-
-    @Test
-    void isAccountVerifiedAndReturnReturnsVerifiedUser() {
+    void userReturnsAuthenticatedUser() {
         User user = UserFactory.userBuilder().isVerified(true).build();
         authenticateAs(user.getId());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
 
-        User result = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User result = AuthenticatedUser.user(userRepository);
 
         assertThat(result).isEqualTo(user);
     }
 
     @Test
-    void isAccountVerifiedAndReturnThrowsWhenUserNotFound() {
+    void userThrowsWhenUserNotFound() {
         UUID userId = UUID.randomUUID();
         authenticateAs(userId);
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> AuthenticatedUser.isAccountVerifiedAndReturn(userRepository))
+        assertThatThrownBy(() -> AuthenticatedUser.user(userRepository))
                 .isInstanceOf(UnauthorizedException.class)
                 .hasMessage("User not found");
-    }
-
-    @Test
-    void isAccountVerifiedAndReturnThrowsWhenUserIsNotVerified() {
-        User user = UserFactory.userBuilder().isVerified(false).build();
-        authenticateAs(user.getId());
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-
-        assertThatThrownBy(() -> AuthenticatedUser.isAccountVerifiedAndReturn(userRepository))
-                .isInstanceOf(UnauthorizedException.class)
-                .hasMessage("Account unverified");
     }
 }

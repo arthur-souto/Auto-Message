@@ -26,14 +26,14 @@ public class AssetFavoriteService {
 
     @Transactional(readOnly = true)
     public Page<AssetFavoriteResponse> findAll(Pageable pageable) {
-        final var user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        final var user = AuthenticatedUser.user(userRepository);
         return assetFavoriteRepository.findAllByUserId(user.getId(), pageable).map(AssetFavoriteResponse::from);
     }
 
 
     @Transactional
     public void toggleAsset(UUID assetId) {
-        final var user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        final var user = AuthenticatedUser.user(userRepository);
 
         if(assetFavoriteRepository.existsByUserIdAndAssetId(user.getId(), assetId)) {
             assetFavoriteRepository.deleteByUserIdAndAssetId(user.getId(), assetId);

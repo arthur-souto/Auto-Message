@@ -4,12 +4,10 @@ import com.arthursouto.dto.AssetImportResponse;
 import com.arthursouto.dto.AssetRequest;
 import com.arthursouto.exception.AssetImportRowException;
 import com.arthursouto.exception.BadRequestException;
-import com.arthursouto.repository.UserRepository;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,14 +15,11 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,9 +33,6 @@ import static org.mockito.Mockito.when;
 class AssetImportServiceTest {
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
     private AssetImportRowWriter assetImportRowWriter;
 
     private AssetImportService assetImportService;
@@ -48,20 +40,7 @@ class AssetImportServiceTest {
     @BeforeEach
     void setUp() {
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-        assetImportService = new AssetImportService(userRepository, validator, assetImportRowWriter);
-    }
-
-    @AfterEach
-    void clearContext() {
-        SecurityContextHolder.clearContext();
-    }
-
-    private void authenticateAsVerifiedUser() {
-        UUID userId = UUID.randomUUID();
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(userId, null)
-        );
-        when(userRepository.isVerifiedById(userId)).thenReturn(true);
+        assetImportService = new AssetImportService(validator, assetImportRowWriter);
     }
 
     private MockMultipartFile csv(String filename, String content) {
@@ -74,7 +53,6 @@ class AssetImportServiceTest {
 
     @Test
     void importAssetsCreatesAndUpdatesRowsByCode() {
-        authenticateAsVerifiedUser();
         when(assetImportRowWriter.upsertRow(argThat(codeIs("A1"))))
                 .thenReturn(AssetImportRowWriter.Result.CREATED);
         when(assetImportRowWriter.upsertRow(argThat(codeIs("A2"))))
@@ -97,7 +75,6 @@ class AssetImportServiceTest {
 
     @Test
     void importAssetsIsolatesRowFailuresAndContinuesProcessingRemainingRows() {
-        authenticateAsVerifiedUser();
         when(assetImportRowWriter.upsertRow(argThat(codeIs("A1"))))
                 .thenReturn(AssetImportRowWriter.Result.CREATED);
         when(assetImportRowWriter.upsertRow(argThat(codeIs("A3"))))
@@ -129,7 +106,6 @@ class AssetImportServiceTest {
 
     @Test
     void importAssetsHandlesMalformedCellsAsRowErrorsWithoutBlockingOtherRows() {
-        authenticateAsVerifiedUser();
         when(assetImportRowWriter.upsertRow(argThat(codeIs("A1"))))
                 .thenReturn(AssetImportRowWriter.Result.CREATED);
 
@@ -150,7 +126,6 @@ class AssetImportServiceTest {
 
     @Test
     void importAssetsParsesXlsxEquivalentToCsv() {
-        authenticateAsVerifiedUser();
         when(assetImportRowWriter.upsertRow(argThat(codeIs("A1"))))
                 .thenReturn(AssetImportRowWriter.Result.CREATED);
 
@@ -168,7 +143,6 @@ class AssetImportServiceTest {
 
     @Test
     void importAssetsRejectsEmptyFile() {
-        authenticateAsVerifiedUser();
         MockMultipartFile file = new MockMultipartFile("file", "assets.csv", "text/csv", new byte[0]);
 
         assertThatThrownBy(() -> assetImportService.importAssets(file))
@@ -180,7 +154,6 @@ class AssetImportServiceTest {
 
     @Test
     void importAssetsRejectsUnsupportedExtension() {
-        authenticateAsVerifiedUser();
         MockMultipartFile file = csv("assets.txt", "code,name\nA1,Asset One\n");
 
         assertThatThrownBy(() -> assetImportService.importAssets(file))
@@ -190,7 +163,6 @@ class AssetImportServiceTest {
 
     @Test
     void importAssetsRejectsFileMissingRequiredHeaders() {
-        authenticateAsVerifiedUser();
         MockMultipartFile file = csv("assets.csv", "supplier,category\nAcme,Category A\n");
 
         assertThatThrownBy(() -> assetImportService.importAssets(file))
@@ -200,8 +172,6 @@ class AssetImportServiceTest {
 
     @Test
     void generateTemplateReturnsCsvHeaderRow() {
-        authenticateAsVerifiedUser();
-
         byte[] content = assetImportService.generateTemplate("csv");
 
         assertThat(new String(content, StandardCharsets.UTF_8)).contains("code", "name");

@@ -47,13 +47,13 @@ public class FormulaService {
 
     @Transactional(readOnly = true)
     public Page<FormulaResponse> findAll(Pageable pageable) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         return formulaRepository.findAllByUserId(user.getId(), pageable).map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
     public FormulaResponse findById(UUID id) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         Formula formula = formulaRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Formula not found"));
 
@@ -62,7 +62,7 @@ public class FormulaService {
 
     @Transactional
     public FormulaResponse create(FormulaRequest request) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
 
         Doctor doctor = resolveDoctor(user, request.doctorId());
         Patient patient = resolvePatient(user, request.patientId());
@@ -88,7 +88,7 @@ public class FormulaService {
 
     @Transactional
     public FormulaResponse update(UUID id, FormulaRequest request) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         Formula formula = formulaRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Formula not found"));
 
@@ -107,7 +107,7 @@ public class FormulaService {
 
     @Transactional
     public void delete(UUID id) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         Formula formula = formulaRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Formula not found"));
 

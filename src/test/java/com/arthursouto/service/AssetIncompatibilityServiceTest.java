@@ -10,15 +10,11 @@ import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.factory.AssetFactory;
 import com.arthursouto.repository.AssetIncompatibilityRepository;
 import com.arthursouto.repository.AssetRepository;
-import com.arthursouto.repository.UserRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -40,28 +36,11 @@ class AssetIncompatibilityServiceTest {
     @Mock
     private AssetRepository assetRepository;
 
-    @Mock
-    private UserRepository userRepository;
-
     @InjectMocks
     private AssetIncompatibilityService assetIncompatibilityService;
 
-    @AfterEach
-    void clearContext() {
-        SecurityContextHolder.clearContext();
-    }
-
-    private void authenticateAsVerifiedUser() {
-        UUID userId = UUID.randomUUID();
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(userId, null)
-        );
-        when(userRepository.isVerifiedById(userId)).thenReturn(true);
-    }
-
     @Test
     void addIncompatibilityThrowsWhenSameAsset() {
-        authenticateAsVerifiedUser();
         Asset asset = AssetFactory.asset();
 
         assertThatThrownBy(() -> assetIncompatibilityService.addIncompatibility(
@@ -73,7 +52,6 @@ class AssetIncompatibilityServiceTest {
 
     @Test
     void addIncompatibilityThrowsWhenPairAlreadyExists() {
-        authenticateAsVerifiedUser();
         Asset asset = AssetFactory.asset();
         Asset other = AssetFactory.asset();
 
@@ -91,7 +69,6 @@ class AssetIncompatibilityServiceTest {
 
     @Test
     void addIncompatibilitySavesPairAndReturnsOtherAssetFromRequesterPerspective() {
-        authenticateAsVerifiedUser();
         Asset asset = AssetFactory.asset();
         Asset other = AssetFactory.asset();
 
@@ -116,7 +93,6 @@ class AssetIncompatibilityServiceTest {
 
     @Test
     void deleteIncompatibilityThrowsWhenNotFound() {
-        authenticateAsVerifiedUser();
         UUID assetId = UUID.randomUUID();
         UUID incompatibilityId = UUID.randomUUID();
         when(assetIncompatibilityRepository.findByIdAndInvolvingAsset(incompatibilityId, assetId))
@@ -128,7 +104,6 @@ class AssetIncompatibilityServiceTest {
 
     @Test
     void findAllByAssetIdThrowsWhenAssetNotFound() {
-        authenticateAsVerifiedUser();
         UUID assetId = UUID.randomUUID();
         when(assetRepository.existsById(assetId)).thenReturn(false);
 

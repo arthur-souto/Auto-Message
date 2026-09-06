@@ -2,6 +2,7 @@ package com.arthursouto.handler;
 
 import com.arthursouto.dto.ErrorResponse;
 import com.arthursouto.exception.ResourceNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -23,25 +24,30 @@ class GlobalExceptionHandlerTest {
     @Test
     void handleAppSetsStatusAndBuildsErrorResponse() {
         HttpServletResponse response = new MockHttpServletResponse();
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getRequestURI()).thenReturn("/api/users/1");
         var ex = new ResourceNotFoundException("User not found");
 
-        ErrorResponse body = handler.handleApp(ex, response);
+        ErrorResponse body = handler.handleApp(ex, request, response);
 
         assertThat(response.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(body.status()).isEqualTo(404);
         assertThat(body.error()).isEqualTo("Not Found");
         assertThat(body.message()).isEqualTo("User not found");
+        assertThat(body.path()).isEqualTo("/api/users/1");
     }
 
     @Test
     void handleValidationReturnsFirstFieldError() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getRequestURI()).thenReturn("/api/users");
         var bindingResult = mock(BindingResult.class);
         var fieldError = new FieldError("request", "message", "must not be blank");
         when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
         var ex = mock(MethodArgumentNotValidException.class);
         when(ex.getBindingResult()).thenReturn(bindingResult);
 
-        ErrorResponse body = handler.handleValidation(ex);
+        ErrorResponse body = handler.handleValidation(ex, request);
 
         assertThat(body.status()).isEqualTo(400);
         assertThat(body.error()).isEqualTo("Bad Request");
@@ -50,19 +56,24 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleValidationFallsBackToDefaultMessageWhenNoFieldErrors() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getRequestURI()).thenReturn("/api/users");
         var bindingResult = mock(BindingResult.class);
         when(bindingResult.getFieldErrors()).thenReturn(List.of());
         var ex = mock(MethodArgumentNotValidException.class);
         when(ex.getBindingResult()).thenReturn(bindingResult);
 
-        ErrorResponse body = handler.handleValidation(ex);
+        ErrorResponse body = handler.handleValidation(ex, request);
 
         assertThat(body.message()).isEqualTo("Validation failed");
     }
 
     @Test
     void handleGenericReturnsInternalServerError() {
-        ErrorResponse body = handler.handleGeneric(new RuntimeException("boom"));
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getRequestURI()).thenReturn("/api/users");
+
+        ErrorResponse body = handler.handleGeneric(new RuntimeException("boom"), request);
 
         assertThat(body.status()).isEqualTo(500);
         assertThat(body.error()).isEqualTo("Internal Server Error");

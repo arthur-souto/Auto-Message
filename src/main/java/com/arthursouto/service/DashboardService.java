@@ -34,7 +34,7 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public DashboardSummaryResponse getSummary() {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         UUID userId = user.getId();
 
         return new DashboardSummaryResponse(

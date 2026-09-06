@@ -5,8 +5,6 @@ import com.arthursouto.dto.AssetImportRowError;
 import com.arthursouto.dto.AssetRequest;
 import com.arthursouto.exception.AssetImportRowException;
 import com.arthursouto.exception.BadRequestException;
-import com.arthursouto.helper.AuthenticatedUser;
-import com.arthursouto.repository.UserRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +23,10 @@ public class AssetImportService {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("csv", "xlsx");
 
-    private final UserRepository userRepository;
     private final Validator validator;
     private final AssetImportRowWriter assetImportRowWriter;
 
     public AssetImportResponse importAssets(MultipartFile file) {
-        AuthenticatedUser.isAccountVerified(userRepository);
-
         String extension = validateFile(file);
         List<RawAssetRow> rows = "csv".equals(extension)
                 ? AssetImportCsvParser.parse(file)
@@ -69,7 +64,6 @@ public class AssetImportService {
     }
 
     public byte[] generateTemplate(String format) {
-        AuthenticatedUser.isAccountVerified(userRepository);
         return AssetImportTemplateGenerator.generate(format);
     }
 

@@ -21,7 +21,7 @@ public class PharmacyProfileService {
 
     @Transactional(readOnly = true)
     public PharmacyProfileResponse findMine() {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         PharmacyProfile profile = pharmacyProfileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pharmacy profile not found"));
 
@@ -30,7 +30,7 @@ public class PharmacyProfileService {
 
     @Transactional
     public PharmacyProfileResponse save(PharmacyProfileRequest request) {
-        User user = AuthenticatedUser.isAccountVerifiedAndReturn(userRepository);
+        User user = AuthenticatedUser.user(userRepository);
         PharmacyProfile profile = pharmacyProfileRepository.findByUserId(user.getId())
                 .orElseGet(() -> PharmacyProfile.builder().user(user).build());
 
