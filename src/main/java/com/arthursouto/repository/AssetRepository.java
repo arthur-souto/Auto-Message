@@ -7,9 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AssetRepository extends JpaRepository<Asset, UUID> {
+
+    Optional<Asset> findByCode(String code);
 
     @Query("""
     SELECT a FROM Asset a
@@ -30,4 +34,12 @@ public interface AssetRepository extends JpaRepository<Asset, UUID> {
            )
     """)
     Page<Asset> searchAssets(@Param("target") String target, Pageable pageable);
+
+    @Query("""
+        SELECT COALESCE(a.category, 'Sem categoria'), COUNT(a)
+        FROM Asset a
+        GROUP BY a.category
+        ORDER BY COUNT(a) DESC
+    """)
+    List<Object[]> countByCategory();
 }

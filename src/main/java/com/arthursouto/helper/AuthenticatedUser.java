@@ -13,21 +13,9 @@ import java.util.UUID;
 public final class AuthenticatedUser {
 
 
-    public static void isAccountVerified(UserRepository userRepository) {
-        if (!userRepository.isVerifiedById(id())) {
-            throw new UnauthorizedException("Account unverified");
-        }
-    }
-
-    public static User isAccountVerifiedAndReturn(UserRepository userRepository) {
-        User user = userRepository.findById(id())
+    public static User user(UserRepository userRepository) {
+        return userRepository.findById(id())
                 .orElseThrow(() -> new UnauthorizedException("User not found"));
-
-        if (!user.isVerified()) {
-            throw new UnauthorizedException("Account unverified");
-        }
-
-        return user;
     }
 
     public static UUID id() {

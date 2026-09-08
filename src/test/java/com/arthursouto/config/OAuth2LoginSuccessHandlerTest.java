@@ -1,6 +1,7 @@
 package com.arthursouto.config;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.dto.TokenPairResponse;
 import com.arthursouto.factory.UserFactory;
 import com.arthursouto.issuer.RefreshTokenIssuer;
 import com.arthursouto.repository.UserRepository;
@@ -9,6 +10,7 @@ import com.arthursouto.service.MessageService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -17,6 +19,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +73,13 @@ class OAuth2LoginSuccessHandlerTest {
 
         assertThat(response.getRedirectedUrl()).startsWith("https://app.example.com/callback?code=exchange-code");
         verify(userRepository, never()).save(any());
+
+        // Pins down accessToken/refreshToken by field, not just presence, to rule out a swap
+        // between jwtService.generateToken() and refreshTokenIssuer.generate() at the call site.
+        ArgumentCaptor<TokenPairResponse> tokensCaptor = ArgumentCaptor.forClass(TokenPairResponse.class);
+        verify(authCodeCache).generateCode(tokensCaptor.capture(), any(Duration.class));
+        assertThat(tokensCaptor.getValue().accessToken()).isEqualTo("access-token");
+        assertThat(tokensCaptor.getValue().refreshToken()).isEqualTo("refresh-token");
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.arthursouto.config;
 
+import com.arthursouto.dto.TokenPairResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +19,11 @@ public class AuthCodeCache {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public record TokenPair(String accessToken, String refreshToken) {}
-
     private String buildRedisKey(String code) {
         return PREFIX + code;
     }
 
-    public String generateCode(TokenPair tokens, Duration ttl) {
+    public String generateCode(TokenPairResponse tokens, Duration ttl) {
         var code = UUID.randomUUID().toString();
 
         try{
@@ -37,13 +36,13 @@ public class AuthCodeCache {
         return code;
     }
 
-    public Optional<TokenPair> consume(String code) {
+    public Optional<TokenPairResponse> consume(String code) {
         String json = redisTemplate.opsForValue().getAndDelete(buildRedisKey(code));
         if(json == null) {
             return Optional.empty();
         }
         try {
-            return Optional.of(objectMapper.readValue(json, TokenPair.class));
+            return Optional.of(objectMapper.readValue(json, TokenPairResponse.class));
         }
         catch (JsonProcessingException e) {
             return Optional.empty();

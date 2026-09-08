@@ -5,15 +5,11 @@ import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.factory.AssetFactory;
 import com.arthursouto.mapper.AssetMapper;
 import com.arthursouto.repository.AssetRepository;
-import com.arthursouto.repository.UserRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,30 +27,13 @@ class AssetServiceTest {
     private AssetRepository assetRepository;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
     private AssetMapper assetMapper;
 
     @InjectMocks
     private AssetService assetService;
 
-    @AfterEach
-    void clearContext() {
-        SecurityContextHolder.clearContext();
-    }
-
-    private void authenticateAsVerifiedUser() {
-        UUID userId = UUID.randomUUID();
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(userId, null)
-        );
-        when(userRepository.isVerifiedById(userId)).thenReturn(true);
-    }
-
     @Test
     void deleteAssetRemovesExistingAsset() {
-        authenticateAsVerifiedUser();
         Asset asset = AssetFactory.asset();
         when(assetRepository.existsById(asset.getId())).thenReturn(true);
 
@@ -65,7 +44,6 @@ class AssetServiceTest {
 
     @Test
     void deleteAssetThrowsWhenAssetNotFound() {
-        authenticateAsVerifiedUser();
         UUID id = UUID.randomUUID();
         when(assetRepository.existsById(id)).thenReturn(false);
 
@@ -78,7 +56,6 @@ class AssetServiceTest {
 
     @Test
     void deleteAssetsRemovesAllGivenIds() {
-        authenticateAsVerifiedUser();
         Asset first = AssetFactory.asset();
         Asset second = AssetFactory.asset();
         List<UUID> ids = List.of(first.getId(), second.getId());
@@ -91,7 +68,6 @@ class AssetServiceTest {
 
     @Test
     void deleteAssetsThrowsWhenSomeIdsAreMissingAndDeletesNothing() {
-        authenticateAsVerifiedUser();
         Asset found = AssetFactory.asset();
         UUID missingId = UUID.randomUUID();
         List<UUID> ids = List.of(found.getId(), missingId);

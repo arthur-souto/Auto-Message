@@ -11,6 +11,10 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByGoogleId(String googleId);
 
+    Optional<User> findByEmail(String email);
+
+    boolean existsByEmail(String email);
+
     @Query("SELECT CASE WHEN u.isVerified = true THEN true ELSE false END FROM User u WHERE u.id = :id")
     boolean isVerifiedById(@Param("id") UUID id);
 }

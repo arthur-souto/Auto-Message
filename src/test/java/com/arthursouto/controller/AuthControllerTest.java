@@ -1,10 +1,14 @@
 package com.arthursouto.controller;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.dto.CreateUserRequest;
+import com.arthursouto.dto.LoginRequest;
 import com.arthursouto.dto.MeResponse;
+import com.arthursouto.dto.TokenPairResponse;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.factory.UserFactory;
 import com.arthursouto.repository.UserRepository;
+import com.arthursouto.service.AuthService;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.RefreshTokenService;
 import com.arthursouto.service.UserService;
@@ -46,6 +50,8 @@ class AuthControllerTest {
     private JwtService jwtService;
     @MockitoBean
     private UserService userService;
+    @MockitoBean
+    private AuthService authService;
 
     @AfterEach
     void clearContext() {
@@ -98,6 +104,34 @@ class AuthControllerTest {
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(new AuthController.RefreshRequest("some-token"))))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void registerReturnsCreatedTokenPair() throws Exception {
+        var request = new CreateUserRequest("new@example.com", "New User", "newuser", "s3cret");
+        var tokens = new TokenPairResponse("access-token", "refresh-token");
+        when(authService.createUserAccount(request)).thenReturn(tokens);
+
+        mockMvc.perform(post("/v1/api/auth/register")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.accessToken").value("access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh-token"));
+    }
+
+    @Test
+    void loginReturnsTokenPair() throws Exception {
+        var request = new LoginRequest("user@example.com", "s3cret");
+        var tokens = new TokenPairResponse("access-token", "refresh-token");
+        when(authService.login(request)).thenReturn(tokens);
+
+        mockMvc.perform(post("/v1/api/auth/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("refresh-token"));
     }
 
     @Test

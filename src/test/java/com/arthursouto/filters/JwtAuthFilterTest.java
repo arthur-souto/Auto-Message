@@ -1,6 +1,5 @@
-package com.arthursouto.config;
+package com.arthursouto.filters;
 
-import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -28,8 +27,6 @@ class JwtAuthFilterTest {
     @Mock
     private JwtService jwtService;
     @Mock
-    private UserRepository userRepository;
-    @Mock
     private FilterChain filterChain;
     @Mock
     private Claims claims;
@@ -38,7 +35,7 @@ class JwtAuthFilterTest {
 
     @BeforeEach
     void setUp() {
-        filter = new JwtAuthFilter(jwtService, userRepository);
+        filter = new JwtAuthFilter(jwtService);
     }
 
     @AfterEach
@@ -65,7 +62,6 @@ class JwtAuthFilterTest {
                 .extracting(Object::toString)
                 .containsExactly("ROLE_ADMIN");
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(userRepository);
     }
 
     @Test
@@ -77,7 +73,7 @@ class JwtAuthFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(jwtService, userRepository);
+        verifyNoInteractions(jwtService);
     }
 
     @Test
@@ -92,7 +88,6 @@ class JwtAuthFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(userRepository);
     }
 
     @Test
@@ -105,6 +100,6 @@ class JwtAuthFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
-        verifyNoInteractions(jwtService, userRepository);
+        verifyNoInteractions(jwtService);
     }
 }

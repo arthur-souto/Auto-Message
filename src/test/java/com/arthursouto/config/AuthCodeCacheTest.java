@@ -1,5 +1,6 @@
 package com.arthursouto.config;
 
+import com.arthursouto.dto.TokenPairResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,9 +31,9 @@ class AuthCodeCacheTest {
     private AuthCodeCache authCodeCache;
 
     @Test
-    void generateCodeStoresSerializedTokensUnderPrefixedKey() {
+    void generateCodeStoresSerializedTokensUnderPrefixedKey() throws Exception {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-        var tokens = new AuthCodeCache.TokenPair("access-token", "refresh-token");
+        var tokens = new TokenPairResponse("access-token", "refresh-token");
 
         String code = authCodeCache.generateCode(tokens, Duration.ofSeconds(30));
 
@@ -42,6 +43,13 @@ class AuthCodeCacheTest {
 
         assertThat(keyCaptor.getValue()).isEqualTo("auth:code:" + code);
         assertThat(valueCaptor.getValue()).contains("access-token").contains("refresh-token");
+
+        // Round-trips the exact stored JSON back through the real deserializer to
+        // rule out a field swap between accessToken/refreshToken during (de)serialization.
+        TokenPairResponse roundTripped = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readValue(valueCaptor.getValue(), TokenPairResponse.class);
+        assertThat(roundTripped.accessToken()).isEqualTo("access-token");
+        assertThat(roundTripped.refreshToken()).isEqualTo("refresh-token");
     }
 
     @Test
@@ -51,9 +59,9 @@ class AuthCodeCacheTest {
         when(valueOperations.getAndDelete("auth:code:" + code))
                 .thenReturn("{\"accessToken\":\"a\",\"refreshToken\":\"r\"}");
 
-        Optional<AuthCodeCache.TokenPair> result = authCodeCache.consume(code);
+        Optional<TokenPairResponse> result = authCodeCache.consume(code);
 
-        assertThat(result).contains(new AuthCodeCache.TokenPair("a", "r"));
+        assertThat(result).contains(new TokenPairResponse("a", "r"));
     }
 
     @Test
@@ -61,7 +69,7 @@ class AuthCodeCacheTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.getAndDelete(any())).thenReturn(null);
 
-        Optional<AuthCodeCache.TokenPair> result = authCodeCache.consume("missing-code");
+        Optional<TokenPairResponse> result = authCodeCache.consume("missing-code");
 
         assertThat(result).isEmpty();
     }
@@ -71,7 +79,7 @@ class AuthCodeCacheTest {
         when(redisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.getAndDelete(any())).thenReturn("not-json");
 
-        Optional<AuthCodeCache.TokenPair> result = authCodeCache.consume("bad-code");
+        Optional<TokenPairResponse> result = authCodeCache.consume("bad-code");
 
         assertThat(result).isEmpty();
     }
