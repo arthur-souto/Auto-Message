@@ -3,22 +3,26 @@ package com.arthursouto.config;
 import com.arthursouto.filters.JwtAuthFilter;
 import com.arthursouto.filters.VerifiedAccountFilter;
 import com.arthursouto.filters.CorrelationIdFilter;
+import com.arthursouto.utils.JsonErrorWriter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.security.SecureRandom;
 import java.util.List;
 
 @Configuration
@@ -60,7 +64,9 @@ public class SecurityConfig {
                 "/actuator/health/**",
                 "/v1/api/auth/exchange",
                 "/v1/api/auth/refresh",
-                "/v1/api/auth/logout"
+                "/v1/api/auth/logout",
+                "/v1/api/auth/register",
+                "/v1/api/auth/login"
         };
 
         http
@@ -78,9 +84,12 @@ public class SecurityConfig {
                 .oauth2Login(o -> o
                         .successHandler(oauth2LoginSuccessHandler)
                         .failureHandler((request, response, exception) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"error\": \"" + exception.getMessage() + "\"}");
+                            JsonErrorWriter.write(
+                                    request,
+                                    response,
+                                    HttpStatus.UNAUTHORIZED,
+                                    "User Unauthorized"
+                            );
                         })
                 )
                 .addFilterBefore(correlationIdFilter, UsernamePasswordAuthenticationFilter.class)
@@ -88,6 +97,16 @@ public class SecurityConfig {
                 .addFilterAfter(verifiedAccountFilter, JwtAuthFilter.class)
         ;
         return http.build();
+    }
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecureRandom secureRandom() {
+        return new SecureRandom();
     }
 
 

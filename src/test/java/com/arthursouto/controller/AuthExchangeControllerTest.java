@@ -1,6 +1,7 @@
 package com.arthursouto.controller;
 
 import com.arthursouto.config.AuthCodeCache;
+import com.arthursouto.dto.TokenPairResponse;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +42,7 @@ class AuthExchangeControllerTest {
     @Test
     void exchangeReturnsTokensWhenCodeIsValid() throws Exception {
         when(authCodeCache.consume("valid-code"))
-                .thenReturn(Optional.of(new AuthCodeCache.TokenPair("access-token", "refresh-token")));
+                .thenReturn(Optional.of(new TokenPairResponse("access-token", "refresh-token")));
 
         mockMvc.perform(post("/v1/api/auth/exchange")
                         .contentType("application/json")

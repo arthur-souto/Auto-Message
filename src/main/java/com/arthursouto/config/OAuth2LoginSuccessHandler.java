@@ -1,6 +1,7 @@
 package com.arthursouto.config;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.dto.TokenPairResponse;
 import com.arthursouto.issuer.RefreshTokenIssuer;
 import com.arthursouto.repository.UserRepository;
 import com.arthursouto.service.JwtService;
@@ -65,7 +66,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
     private void redirect(String accessToken, String refreshToken, @NonNull HttpServletResponse res) throws IOException {
-        var tokens = new AuthCodeCache.TokenPair(accessToken, refreshToken);
+        var tokens = new TokenPairResponse(accessToken, refreshToken);
         var code = authCodeCache.generateCode(tokens, Duration.ofSeconds(DURATION_SECONDS_CODE));
 
         var redirectUrl = UriComponentsBuilder.fromUriString(frontRedirectUrl)

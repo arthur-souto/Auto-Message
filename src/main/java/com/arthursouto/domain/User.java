@@ -43,6 +43,9 @@ public class User {
     @Column(name = "google_id", unique = true)
     private String googleId;
 
+    @Column(nullable = true)
+    private String password;
+
     @Column(name = "is_verified", nullable = false)
     @Builder.Default
     private boolean isVerified = false;

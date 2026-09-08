@@ -30,8 +30,16 @@ public class VerifiedAccountFilter extends OncePerRequestFilter {
 
     private final List<RequestMatcher> excludeMatchers = List.of(
             PathPatternRequestMatcher.withDefaults().matcher("/api/public/**"),
-            PathPatternRequestMatcher.withDefaults().matcher("/api/auth/login"),
-            PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**")
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/login"),
+            PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/refresh"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/exchange"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/logout"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/register"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/refresh"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/me"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/active"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/verification-code")
     );
 
     @Override

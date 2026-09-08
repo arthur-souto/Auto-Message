@@ -1,10 +1,14 @@
 package com.arthursouto.controller;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.dto.CreateUserRequest;
+import com.arthursouto.dto.LoginRequest;
 import com.arthursouto.dto.MeResponse;
+import com.arthursouto.dto.TokenPairResponse;
 import com.arthursouto.dto.UserUpdateRequest;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.repository.UserRepository;
+import com.arthursouto.service.AuthService;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.RefreshTokenService;
 import com.arthursouto.service.UserService;
@@ -27,8 +31,20 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final UserService userService;
+    private final AuthService authService;
 
     public record RefreshRequest(String refreshToken) {}
+
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public TokenPairResponse register(@Valid @RequestBody CreateUserRequest request) {
+        return authService.createUserAccount(request);
+    }
+
+    @PostMapping("/login")
+    public TokenPairResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
+    }
 
     @PostMapping("/refresh")
     public ResponseEntity<Map<String ,String>> refresh(@RequestBody RefreshRequest req) {
@@ -54,9 +70,15 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/verification-code")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void sendVerificationCode(@AuthenticationPrincipal UUID userId) {
+        userService.startVerification(userId);
+    }
+
     @PutMapping("/active")
-    public void activeMe(@AuthenticationPrincipal UUID userId, @RequestParam String secret) {
-        userService.activeUser(userId, secret);
+    public void activeMe(@AuthenticationPrincipal UUID userId, @RequestParam String code) {
+        userService.activeUser(userId, code);
     }
 
     @GetMapping("/me")
