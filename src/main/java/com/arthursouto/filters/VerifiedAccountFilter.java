@@ -38,6 +38,7 @@ public class VerifiedAccountFilter extends OncePerRequestFilter {
             PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/register"),
             PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/refresh"),
             PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/me"),
+            PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/export"),
             PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/active"),
             PathPatternRequestMatcher.withDefaults().matcher("/v1/api/auth/verification-code")
     );

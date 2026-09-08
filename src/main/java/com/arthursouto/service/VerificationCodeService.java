@@ -13,6 +13,7 @@ import java.util.UUID;
 public class VerificationCodeService {
 
     private static final Duration EXPIRATION = Duration.ofMinutes(3);
+    public static final int MAX_ATTEMPTS = 5;
     private final StringRedisTemplate redisTemplate;
 
     public Duration getExpiration() {
@@ -32,7 +33,24 @@ public class VerificationCodeService {
         redisTemplate.delete(buildKey(userId));
     }
 
+    public int incrementAttempts(UUID userId) {
+        String key = attemptsKey(userId);
+        Long count = redisTemplate.opsForValue().increment(key);
+        if (count != null && count == 1L) {
+            redisTemplate.expire(key, EXPIRATION);
+        }
+        return count == null ? 1 : count.intValue();
+    }
+
+    public void clearAttempts(UUID userId) {
+        redisTemplate.delete(attemptsKey(userId));
+    }
+
     private String buildKey(UUID usuarioId) {
         return "verification:" + usuarioId;
+    }
+
+    private String attemptsKey(UUID userId) {
+        return "verification:attempts:" + userId;
     }
 }

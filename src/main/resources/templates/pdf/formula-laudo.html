@@ -4,57 +4,131 @@
     <meta charset="UTF-8"/>
     <title>Laudo Técnico de Fórmula</title>
     <style>
-        body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #222222; }
-        .header { overflow: hidden; padding-bottom: 12px; border-bottom: 2px solid #222222; margin-bottom: 20px; }
-        .header-brand { float: left; max-width: 45%; font-size: 16px; font-weight: bold; color: #1a4d3e; }
-        .header-patient { float: right; max-width: 55%; text-align: left; }
-        .header-patient-title { font-weight: bold; letter-spacing: 0.5px; margin-bottom: 4px; }
+        @page {
+            size: A4;
+            margin: 2.2cm 1.8cm 2cm 1.8cm;
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 8px;
+                color: #8a8a8a;
+            }
+        }
+
+        * { box-sizing: border-box; }
+
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #2b2b2b; line-height: 1.4; }
+
+        .header { overflow: hidden; padding-bottom: 14px; border-bottom: 3px solid #1a4d3e; margin-bottom: 18px; }
+        .header-brand { float: left; max-width: 45%; }
+        .header-brand-name { font-size: 18px; font-weight: bold; color: #1a4d3e; }
+        .header-brand-tag { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #7c9a8e; margin-top: 2px; }
+
+        .header-patient {
+            float: right; max-width: 52%; text-align: left;
+            background-color: #eef5f1; border: 1px solid #cfe1d8; border-radius: 6px;
+            padding: 8px 12px;
+        }
+        .header-patient-title {
+            font-weight: bold; letter-spacing: 0.6px; margin-bottom: 6px;
+            font-size: 9px; color: #1a4d3e; text-transform: uppercase;
+        }
         .header-patient-row { margin-bottom: 2px; }
-        h1 { font-size: 20px; margin: 0 0 4px 0; }
-        h2 { font-size: 13px; margin-top: 20px; margin-bottom: 6px; border-bottom: 1px solid #cccccc; padding-bottom: 4px; }
-        .subtitle { color: #666666; margin-bottom: 16px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        th, td { border: 1px solid #cccccc; padding: 6px 8px; text-align: left; font-size: 10px; }
-        th { background-color: #f2f2f2; }
-        .status-within { color: #1a7f37; font-weight: bold; }
-        .status-below, .status-above { color: #c0392b; font-weight: bold; }
-        .status-none { color: #888888; }
-        .warning-box { border: 1px solid #d9822b; background-color: #fdf3e7; padding: 10px; margin-bottom: 10px; }
+        .header-patient-row .label { color: #6b7a75; }
+
+        h1 { font-size: 19px; margin: 0 0 4px 0; color: #1a1a1a; }
+        h2 {
+            font-size: 12px; margin-top: 22px; margin-bottom: 8px; color: #1a4d3e;
+            text-transform: uppercase; letter-spacing: 0.4px;
+            border-bottom: 1.5px solid #1a4d3e; padding-bottom: 4px;
+        }
+        .subtitle { color: #666666; margin-bottom: 4px; }
+        .formula-code { color: #8a8a8a; font-size: 9px; margin-bottom: 16px; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+        th, td { border: 1px solid #e0e4e2; padding: 7px 8px; text-align: left; font-size: 10px; }
+        th { background-color: #1a4d3e; color: #ffffff; font-size: 9px; text-transform: uppercase; letter-spacing: 0.3px; }
+        tbody tr:nth-child(even) { background-color: #f6f9f7; }
+
+        .badge {
+            display: inline-block; padding: 2px 8px; border-radius: 8px;
+            font-size: 9px; font-weight: bold;
+        }
+        .badge-within { color: #15803d; background-color: #e7f6ec; }
+        .badge-below, .badge-above { color: #b91c1c; background-color: #fdecec; }
+        .badge-none { color: #6b7280; background-color: #f1f2f3; }
+
+        .warning-box {
+            border: 1px solid #ecb96a; background-color: #fdf3e7; border-radius: 6px;
+            padding: 10px 12px; margin-top: 10px; margin-bottom: 6px;
+        }
+        .warning-box-title { color: #93540b; font-weight: bold; margin-bottom: 6px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .warning-box-title .flag {
+            display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center;
+            border-radius: 50%; background-color: #d9822b; color: #ffffff; font-size: 9px; margin-right: 5px;
+        }
         .warning-item { margin-bottom: 4px; }
-        .info-block { margin-bottom: 14px; }
-        .info-block-label { font-weight: bold; margin-bottom: 2px; }
+        .warning-item .assets { font-weight: bold; color: #4a2c02; }
+        .warning-item .reason { color: #5a5a5a; }
+
+        .info-grid { overflow: hidden; margin-top: 4px; }
+        .info-card {
+            float: left; width: 48%; background-color: #f8f9f8; border: 1px solid #e5e8e6;
+            border-radius: 6px; padding: 10px 12px; margin-bottom: 10px;
+        }
+        .info-card + .info-card { margin-left: 4%; }
+        .info-card-label {
+            font-weight: bold; margin-bottom: 4px; font-size: 9px; color: #1a4d3e;
+            text-transform: uppercase; letter-spacing: 0.4px;
+        }
+
         .signature { margin-top: 60px; text-align: center; }
-        .signature-line { border-top: 1px solid #222222; width: 260px; margin: 0 auto 4px auto; }
-        .footer { margin-top: 40px; padding-top: 12px; border-top: 2px solid #222222; overflow: hidden; font-size: 9px; color: #555555; }
+        .signature-line { border-top: 1px solid #222222; width: 260px; margin: 0 auto 6px auto; }
+        .signature-name { font-weight: bold; }
+        .signature-role { color: #6b7a75; font-size: 9px; }
+
+        .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #cccccc; overflow: hidden; font-size: 9px; color: #6b7280; }
         .footer-date { float: left; width: 45%; }
+        .footer-disclaimer { margin-top: 4px; color: #9a9a9a; }
         .footer-pharmacy { float: right; width: 55%; text-align: left; }
-        .footer-pharmacy strong { color: #222222; }
+        .footer-pharmacy strong { color: #2b2b2b; }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="header-brand"
-             th:text="${pharmacyProfile != null and pharmacyProfile.pharmacyName != null and !pharmacyProfile.pharmacyName.isEmpty() ? pharmacyProfile.pharmacyName : 'Laudo Técnico de Fórmula'}">
-            Farmácia
+        <div class="header-brand">
+            <div class="header-brand-name"
+                 th:text="${pharmacyProfile != null and pharmacyProfile.pharmacyName != null and !pharmacyProfile.pharmacyName.isEmpty() ? pharmacyProfile.pharmacyName : 'Laudo Técnico de Fórmula'}">
+                Farmácia
+            </div>
+            <div class="header-brand-tag">Laudo Técnico de Manipulação</div>
         </div>
         <div class="header-patient">
-            <div class="header-patient-title">IDENTIFICAÇÃO DO PACIENTE</div>
+            <div class="header-patient-title">Identificação do Paciente</div>
             <div th:if="${formula.patient != null}">
-                <div class="header-patient-row">Nome: <strong th:text="${formula.patient.name}">Nome</strong></div>
-                <div class="header-patient-row">Documento: <strong th:text="${formula.patient.document}">000.000.000-00</strong></div>
+                <div class="header-patient-row"><span class="label">Nome:</span> <strong th:text="${formula.patient.name}">Nome</strong></div>
+                <div class="header-patient-row"><span class="label">Documento:</span> <strong th:text="${formula.patient.document}">000.000.000-00</strong></div>
+                <div class="header-patient-row" th:if="${formula.patient.birthDate != null}">
+                    <span class="label">Nascimento:</span> <strong th:text="${#temporals.format(formula.patient.birthDate, 'dd/MM/yyyy')}">01/01/1990</strong>
+                </div>
                 <div class="header-patient-row" th:if="${formula.patient.phone != null and !formula.patient.phone.isEmpty()}">
-                    Telefone: <strong th:text="${formula.patient.phone}">(00) 00000-0000</strong>
+                    <span class="label">Telefone:</span> <strong th:text="${formula.patient.phone}">(00) 00000-0000</strong>
                 </div>
             </div>
-            <div th:unless="${formula.patient != null}" class="status-none">Paciente não informado</div>
-            <div class="header-patient-row">Fórmula Nº: <strong th:text="${formula.id}">uuid</strong></div>
+            <div th:unless="${formula.patient != null}" class="badge badge-none">Paciente não informado</div>
+            <div class="header-patient-row" style="margin-top: 4px;">
+                <span class="label">Fórmula Nº:</span> <strong th:text="${formula.id.toString().substring(0, 8).toUpperCase()}">A1B2C3D4</strong>
+            </div>
         </div>
     </div>
 
     <h1 th:text="${formula.name}">Nome da fórmula</h1>
     <div class="subtitle" th:if="${formula.description != null and !formula.description.isEmpty()}" th:text="${formula.description}">Descrição</div>
+    <div class="formula-code">
+        Código completo: <span th:text="${formula.id}">uuid</span> &#183;
+        Emitido em <span th:text="${#temporals.format(generatedAt, 'dd/MM/yyyy')}">01/01/2026</span>
+    </div>
 
-    <h2>Formulação</h2>
+    <h2>Composição da Fórmula</h2>
     <table>
         <thead>
         <tr>
@@ -74,49 +148,50 @@
             <td th:text="${item.unit}">mg</td>
             <td th:text="${item.concentration != null ? item.concentration.stripTrailingZeros().toPlainString() : '-'}">-</td>
             <td>
-                <span th:if="${item.concentrationStatus == null}" class="status-none">Sem verificação</span>
-                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'WITHIN_RANGE'}" class="status-within">Dentro da faixa</span>
-                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'BELOW_MIN'}" class="status-below">Abaixo do mínimo</span>
-                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'ABOVE_MAX'}" class="status-above">Acima do máximo</span>
-                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'NO_DATA'}" class="status-none">Sem dados de referência</span>
+                <span th:if="${item.concentrationStatus == null}" class="badge badge-none">Sem verificação</span>
+                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'WITHIN_RANGE'}" class="badge badge-within">Dentro da faixa</span>
+                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'BELOW_MIN'}" class="badge badge-below">Abaixo do mínimo</span>
+                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'ABOVE_MAX'}" class="badge badge-above">Acima do máximo</span>
+                <span th:if="${item.concentrationStatus != null and item.concentrationStatus.name() == 'NO_DATA'}" class="badge badge-none">Sem dados de referência</span>
             </td>
         </tr>
         </tbody>
     </table>
 
     <div class="warning-box" th:if="${!formula.incompatibilities.isEmpty()}">
-        <strong>Avisos de incompatibilidade</strong>
+        <div class="warning-box-title"><span class="flag">!</span>Avisos de Incompatibilidade</div>
         <div class="warning-item" th:each="w : ${formula.incompatibilities}">
-            <span th:text="${w.assetAName}">A</span> + <span th:text="${w.assetBName}">B</span>:
-            <span th:text="${w.reason}">motivo</span>
+            <span class="assets" th:text="${w.assetAName} + ' + ' + ${w.assetBName}">A + B</span>:
+            <span class="reason" th:text="${w.reason}">motivo</span>
         </div>
     </div>
 
-    <div class="info-block" th:if="${formula.quantity != null and !formula.quantity.isEmpty()}">
-        <div class="info-block-label">Quantidade</div>
-        <div th:text="${formula.quantity}">1 unid</div>
-    </div>
-
-    <div class="info-block" th:if="${formula.posology != null and !formula.posology.isEmpty()}">
-        <div class="info-block-label">Posologia</div>
-        <div th:text="${formula.posology}">1 dose após o café da manhã</div>
+    <div class="info-grid" th:if="${(formula.quantity != null and !formula.quantity.isEmpty()) or (formula.posology != null and !formula.posology.isEmpty())}">
+        <div class="info-card" th:if="${formula.quantity != null and !formula.quantity.isEmpty()}">
+            <div class="info-card-label">Quantidade</div>
+            <div th:text="${formula.quantity}">1 unid</div>
+        </div>
+        <div class="info-card" th:if="${formula.posology != null and !formula.posology.isEmpty()}">
+            <div class="info-card-label">Posologia</div>
+            <div th:text="${formula.posology}">1 dose após o café da manhã</div>
+        </div>
     </div>
 
     <div class="signature">
         <div class="signature-line"></div>
         <div th:if="${formula.doctor != null}">
-            <div th:text="${formula.doctor.name}">Nome do médico</div>
+            <div class="signature-name" th:text="${formula.doctor.name}">Nome do médico</div>
             <div th:text="'CRM ' + ${formula.doctor.crm}">CRM</div>
-            <div th:if="${formula.doctor.specialty != null and !formula.doctor.specialty.isEmpty()}"
+            <div class="signature-role" th:if="${formula.doctor.specialty != null and !formula.doctor.specialty.isEmpty()}"
                  th:text="${formula.doctor.specialty}">Especialidade</div>
         </div>
-        <div th:unless="${formula.doctor != null}" class="status-none">Prescritor não informado</div>
+        <div th:unless="${formula.doctor != null}" class="badge badge-none">Prescritor não informado</div>
     </div>
 
     <div class="footer">
         <div class="footer-date">
-            <div th:text="${#temporals.format(generatedAt, 'dd/MM/yyyy')}">01/01/2026</div>
-            <div>Documento gerado automaticamente pelo sistema. Não substitui avaliação profissional presencial quando aplicável.</div>
+            <div th:text="'Documento gerado em ' + ${#temporals.format(generatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</div>
+            <div class="footer-disclaimer">Documento gerado automaticamente pelo sistema. Não substitui avaliação profissional presencial quando aplicável.</div>
         </div>
         <div class="footer-pharmacy" th:if="${pharmacyProfile != null}">
             <div th:if="${pharmacyProfile.pharmacyName != null and !pharmacyProfile.pharmacyName.isEmpty()}">

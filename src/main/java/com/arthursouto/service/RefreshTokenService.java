@@ -35,13 +35,19 @@ public class RefreshTokenService {
 
         String hashed = refreshTokenIssuer.hash(oldToken);
 
-        var found = refreshTokenRepository.findByTokenHashAndRevokedFalse(hashed);
+        var found = refreshTokenRepository.findByTokenHash(hashed);
 
         if (found.isEmpty()) {
             return Optional.empty();
         }
 
         RefreshToken rt = found.get();
+
+        if (rt.isRevoked()) {
+            log.warn("Refresh token reuse detected for user {}. Revoking all active sessions.", rt.getUser().getId());
+            refreshTokenRepository.revokeAllForUser(rt.getUser().getId());
+            return Optional.empty();
+        }
 
         if (!rt.getExpiresAt().isAfter(Instant.now())) {
             return Optional.empty();

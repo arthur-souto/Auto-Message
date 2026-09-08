@@ -57,5 +57,5 @@ app:
   frontend:
     redirect-url: ${REDIRECT_URI}
     base-url: ${FRONT_URL}
-  activation:
-    secret: ${ACTIVATE_SECRET}
+  legal:
+    terms-version: "1.0"

@@ -18,4 +18,7 @@ public interface AssetFavoriteRepository extends JpaRepository<AssetFavorite, UU
 
     @Modifying
     void deleteByUserIdAndAssetId(UUID userId, UUID assetId);
+
+    @Modifying
+    void deleteAllByUserId(UUID userId);
 }

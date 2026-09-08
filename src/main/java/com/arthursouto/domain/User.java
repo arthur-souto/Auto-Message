@@ -65,5 +65,14 @@ public class User {
     @Builder.Default
     private Instant createdAt = Instant.now();
 
+    @Column(name = "accepted_terms_at")
+    private Instant acceptedTermsAt;
+
+    @Column(name = "accepted_terms_version")
+    private String acceptedTermsVersion;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
 }
 

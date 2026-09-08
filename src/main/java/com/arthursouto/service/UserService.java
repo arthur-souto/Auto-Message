@@ -5,6 +5,7 @@ import com.arthursouto.dto.MeResponse;
 import com.arthursouto.dto.UserUpdateRequest;
 import com.arthursouto.exception.BadRequestException;
 import com.arthursouto.exception.ResourceNotFoundException;
+import com.arthursouto.exception.TooManyRequestsException;
 import com.arthursouto.exception.UnauthorizedException;
 import com.arthursouto.mapper.UserMapper;
 import com.arthursouto.repository.UserRepository;
@@ -13,7 +14,6 @@ import com.google.common.io.BaseEncoding;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,9 +33,6 @@ public class UserService {
     private final EmailService emailService;
     private final VerificationCodeService verificationCodeService;
 
-    @Value("${app.activation.secret}")
-    private String privateSecret;
-
     @Transactional(readOnly = true)
     public MeResponse getUserById(UUID userId) {
         var user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -45,12 +42,14 @@ public class UserService {
     @Transactional
     public void startVerification(UUID userId) {
         var user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        assertNotDeleted(user);
 
         final var code = generateUserCodeVerification();
 
         try {
             sendCodeToEmail(code, user);
             verificationCodeService.save(user.getId(), code);
+            verificationCodeService.clearAttempts(user.getId());
             log.info("send code to {}", user.getEmail());
         }
         catch (MessagingException e) {
@@ -62,6 +61,12 @@ public class UserService {
     @Transactional
     public void activeUser(UUID userId, String code) {
         var user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        assertNotDeleted(user);
+
+        int attempts = verificationCodeService.incrementAttempts(userId);
+        if (attempts > VerificationCodeService.MAX_ATTEMPTS) {
+            throw new TooManyRequestsException("Too many failed attempts. Request a new code.");
+        }
 
         String redisCode = verificationCodeService.getCode(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Verification code not found"));
@@ -73,6 +78,7 @@ public class UserService {
         user.setVerified(true);
         userRepository.save(user);
         verificationCodeService.invalidateCode(userId);
+        verificationCodeService.clearAttempts(userId);
     }
 
 
@@ -98,9 +104,16 @@ public class UserService {
     @Transactional
     public MeResponse updateUser(UUID userId, UserUpdateRequest request) {
         var user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        assertNotDeleted(user);
 
         userMapper.updateUser(request, user);
 
         return MeResponse.from(userRepository.save(user));
+    }
+
+    private void assertNotDeleted(User user) {
+        if (user.getDeletedAt() != null) {
+            throw new UnauthorizedException("This account has been deleted");
+        }
     }
 }

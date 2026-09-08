@@ -48,7 +48,6 @@ jobs:
       JWT_REFRESH_EXPIRATION: 86400000
       REDIRECT_URI: http://localhost:3000/redirect
       FRONT_URL: http://localhost:3000
-      ACTIVATE_SECRET: test-activate-secret
 
     steps:
       - name: Checkout code

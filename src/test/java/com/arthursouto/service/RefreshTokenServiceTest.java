@@ -50,7 +50,7 @@ class RefreshTokenServiceTest {
     @Test
     void rotateReturnsEmptyWhenTokenHashNotFound() {
         when(refreshTokenIssuer.hash("token")).thenReturn("hash");
-        when(refreshTokenRepository.findByTokenHashAndRevokedFalse("hash")).thenReturn(Optional.empty());
+        when(refreshTokenRepository.findByTokenHash("hash")).thenReturn(Optional.empty());
 
         Optional<RefreshTokenService.RotationResult> result = refreshTokenService.rotate("token");
 
@@ -62,7 +62,7 @@ class RefreshTokenServiceTest {
         User user = UserFactory.user();
         RefreshToken expired = RefreshTokenFactory.expiredToken(user);
         when(refreshTokenIssuer.hash("token")).thenReturn(expired.getTokenHash());
-        when(refreshTokenRepository.findByTokenHashAndRevokedFalse(expired.getTokenHash()))
+        when(refreshTokenRepository.findByTokenHash(expired.getTokenHash()))
                 .thenReturn(Optional.of(expired));
 
         Optional<RefreshTokenService.RotationResult> result = refreshTokenService.rotate("token");
@@ -76,7 +76,7 @@ class RefreshTokenServiceTest {
         User user = UserFactory.user();
         RefreshToken valid = RefreshTokenFactory.validToken(user);
         when(refreshTokenIssuer.hash("token")).thenReturn(valid.getTokenHash());
-        when(refreshTokenRepository.findByTokenHashAndRevokedFalse(valid.getTokenHash()))
+        when(refreshTokenRepository.findByTokenHash(valid.getTokenHash()))
                 .thenReturn(Optional.of(valid));
         when(refreshTokenIssuer.generate(user)).thenReturn("new-refresh-token");
 
@@ -87,6 +87,22 @@ class RefreshTokenServiceTest {
         assertThat(result.get().newToken()).isEqualTo("new-refresh-token");
         assertThat(valid.isRevoked()).isTrue();
         verify(refreshTokenRepository).save(valid);
+    }
+
+    @Test
+    void rotateDetectsReuseAndRevokesAllSessions() {
+        User user = UserFactory.user();
+        RefreshToken reused = RefreshTokenFactory.revokedToken(user);
+        when(refreshTokenIssuer.hash("token")).thenReturn(reused.getTokenHash());
+        when(refreshTokenRepository.findByTokenHash(reused.getTokenHash()))
+                .thenReturn(Optional.of(reused));
+
+        Optional<RefreshTokenService.RotationResult> result = refreshTokenService.rotate("token");
+
+        assertThat(result).isEmpty();
+        verify(refreshTokenRepository).revokeAllForUser(user.getId());
+        verify(refreshTokenRepository, never()).save(any());
+        verify(refreshTokenIssuer, never()).generate(any());
     }
 
     @Test

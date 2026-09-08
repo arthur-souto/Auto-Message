@@ -1,6 +1,7 @@
 package com.arthursouto.controller;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.dto.AccountDataExportResponse;
 import com.arthursouto.dto.CreateUserRequest;
 import com.arthursouto.dto.LoginRequest;
 import com.arthursouto.dto.MeResponse;
@@ -8,6 +9,7 @@ import com.arthursouto.dto.TokenPairResponse;
 import com.arthursouto.dto.UserUpdateRequest;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.repository.UserRepository;
+import com.arthursouto.service.AccountDataService;
 import com.arthursouto.service.AuthService;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.RefreshTokenService;
@@ -32,6 +34,7 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserService userService;
     private final AuthService authService;
+    private final AccountDataService accountDataService;
 
     public record RefreshRequest(String refreshToken) {}
 
@@ -70,6 +73,12 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/logout-all")
+    public ResponseEntity<Void> logoutAll(@AuthenticationPrincipal UUID userId) {
+        refreshTokenService.revokeAll(userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/verification-code")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void sendVerificationCode(@AuthenticationPrincipal UUID userId) {
@@ -89,5 +98,16 @@ public class AuthController {
     @PatchMapping("/me")
     public MeResponse updateMe(@AuthenticationPrincipal UUID userId, @Valid @RequestBody UserUpdateRequest request) {
         return userService.updateUser(userId, request);
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMe(@AuthenticationPrincipal UUID userId) {
+        accountDataService.deleteMyAccount(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/export")
+    public AccountDataExportResponse exportMyData(@AuthenticationPrincipal UUID userId) {
+        return accountDataService.exportMyData(userId);
     }
 }

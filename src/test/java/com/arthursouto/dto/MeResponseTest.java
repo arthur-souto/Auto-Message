@@ -16,8 +16,11 @@ class MeResponseTest {
         assertThat(response.id()).isEqualTo(user.getId());
         assertThat(response.googleId()).isEqualTo(user.getGoogleId());
         assertThat(response.email()).isEqualTo(user.getEmail());
+        assertThat(response.name()).isEqualTo(user.getName());
         assertThat(response.username()).isEqualTo(user.getUsername());
         assertThat(response.profileImage()).isEqualTo(user.getProfileImage());
+        assertThat(response.acceptedTermsAt()).isEqualTo(user.getAcceptedTermsAt());
+        assertThat(response.acceptedTermsVersion()).isEqualTo(user.getAcceptedTermsVersion());
     }
 
     @Test

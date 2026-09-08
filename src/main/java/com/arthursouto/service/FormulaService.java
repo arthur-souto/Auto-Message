@@ -52,6 +52,11 @@ public class FormulaService {
     }
 
     @Transactional(readOnly = true)
+    public List<FormulaResponse> findAllForExport(UUID userId) {
+        return formulaRepository.findAllByUserId(userId, Pageable.unpaged()).map(this::toResponse).getContent();
+    }
+
+    @Transactional(readOnly = true)
     public FormulaResponse findById(UUID id) {
         User user = AuthenticatedUser.user(userRepository);
         Formula formula = formulaRepository.findByIdAndUserId(id, user.getId())

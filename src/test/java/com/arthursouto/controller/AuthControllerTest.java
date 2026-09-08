@@ -1,6 +1,7 @@
 package com.arthursouto.controller;
 
 import com.arthursouto.domain.User;
+import com.arthursouto.dto.AccountDataExportResponse;
 import com.arthursouto.dto.CreateUserRequest;
 import com.arthursouto.dto.LoginRequest;
 import com.arthursouto.dto.MeResponse;
@@ -8,6 +9,7 @@ import com.arthursouto.dto.TokenPairResponse;
 import com.arthursouto.exception.ResourceNotFoundException;
 import com.arthursouto.factory.UserFactory;
 import com.arthursouto.repository.UserRepository;
+import com.arthursouto.service.AccountDataService;
 import com.arthursouto.service.AuthService;
 import com.arthursouto.service.JwtService;
 import com.arthursouto.service.RefreshTokenService;
@@ -23,10 +25,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -52,6 +58,8 @@ class AuthControllerTest {
     private UserService userService;
     @MockitoBean
     private AuthService authService;
+    @MockitoBean
+    private AccountDataService accountDataService;
 
     @AfterEach
     void clearContext() {
@@ -107,8 +115,21 @@ class AuthControllerTest {
     }
 
     @Test
+    void logoutAllRevokesEverySessionForAuthenticatedUserAndReturnsNoContent() throws Exception {
+        User user = UserFactory.user();
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(user.getId(), null)
+        );
+
+        mockMvc.perform(post("/v1/api/auth/logout-all"))
+                .andExpect(status().isNoContent());
+
+        verify(refreshTokenService).revokeAll(user.getId());
+    }
+
+    @Test
     void registerReturnsCreatedTokenPair() throws Exception {
-        var request = new CreateUserRequest("new@example.com", "New User", "newuser", "s3cret");
+        var request = new CreateUserRequest("new@example.com", "New User", "newuser", "s3cret12", true);
         var tokens = new TokenPairResponse("access-token", "refresh-token");
         when(authService.createUserAccount(request)).thenReturn(tokens);
 
@@ -147,5 +168,34 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.id").value(user.getId().toString()))
                 .andExpect(jsonPath("$.email").value(user.getEmail()))
                 .andExpect(jsonPath("$.username").value(user.getUsername()));
+    }
+
+    @Test
+    void deleteMeAnonymizesAccountAndReturnsNoContent() throws Exception {
+        User user = UserFactory.user();
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(user.getId(), null)
+        );
+
+        mockMvc.perform(delete("/v1/api/auth/me"))
+                .andExpect(status().isNoContent());
+
+        verify(accountDataService).deleteMyAccount(user.getId());
+    }
+
+    @Test
+    void exportMyDataReturnsAccountDataExport() throws Exception {
+        User user = UserFactory.user();
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(user.getId(), null)
+        );
+        var export = new AccountDataExportResponse(
+                MeResponse.from(user), null, null, List.of(), List.of(), List.of(), List.of(), Instant.now()
+        );
+        when(accountDataService.exportMyData(user.getId())).thenReturn(export);
+
+        mockMvc.perform(get("/v1/api/auth/export"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.account.id").value(user.getId().toString()));
     }
 }

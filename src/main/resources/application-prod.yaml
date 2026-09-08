@@ -20,3 +20,8 @@ logging:
     root: WARN
 server:
   forward-headers-strategy: framework
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
